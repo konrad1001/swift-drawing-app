@@ -1,0 +1,39 @@
+{
+  "artworks": [
+    {
+      "id": "mona_lisa",
+      "title": "Mona Lisa",
+      "description": "Leonardo da Vinci's Mona Lisa is a portrait known for its enigmatic smile and sfumato technique.  It reflects Renaissance humanism and emphasizes individual beauty.",
+      "tooltip": "Capture the subtle smile and soft colors. Note the light source.",
+      "asset_tag": "mona_lisa"
+    },
+    {
+      "id": "starry_night",
+      "title": "The Starry Night",
+      "description": "Van Gogh's The Starry Night depicts his view from an asylum window.  Its swirling sky and vibrant colors express his emotional turmoil and connection to nature.",
+      "tooltip": "Focus on expressive brushstrokes and impasto. Use bold colors.",
+      "asset_tag": "starry_night"
+    },
+    {
+      "id": "the_scream",
+      "title": "The Scream",
+      "description": "Munch's The Scream expresses anxiety and dread.  The distorted figure against a vivid sky embodies alienation and psychological distress.",
+      "tooltip": "Emphasize line and color to convey emotion. Note the swirling lines.",
+      "asset_tag": "the_scream"
+    },
+    {
+      "id": "impression_sunrise",
+      "title": "Impression, Sunrise",
+      "description": "Monet's Impression, Sunrise exemplifies Impressionism, capturing fleeting moments and light effects. It depicts Le Havre harbor at dawn.",
+      "tooltip": "Capture light and atmosphere with short brushstrokes. Note the reflections.",
+      "asset_tag": "impression_sunrise"
+    },
+    {
+      "id": "the_great_wave",
+      "title": "The Great Wave off Kanagawa",
+      "description": "Hokusai's The Great Wave is a woodblock print showing nature's power.  The giant wave dwarfs Mount Fuji, creating a sense of beauty and danger.",
+      "tooltip": "Focus on dynamic composition and line. Contrast wave curves and boat lines.",
+      "asset_tag": "the_great_wave"
+    }
+  ]
+}
