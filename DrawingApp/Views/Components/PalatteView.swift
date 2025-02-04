@@ -12,21 +12,30 @@ struct PalatteView: View {
 
     let colours: [Color]
 
+    init(_ colours: [Color]) {
+        assert(colours.count == 7)
+        self.colours = colours
+    }
+
     var body: some View {
         @Bindable var canvasManager = canvasManager
 
-        HStack {
+        HStack(alignment: .top) {
             VStack {
                 Spacer()
-                ForEach(0..<6) { index in
+                ForEach(1..<7) { index in
                     palatteColour(colours[index])
                         .frame(width: 24, height: 24)
                 }
-                ColorPicker("", selection: $canvasManager.color, supportsOpacity: true)
+                ColorPicker("Brush", selection: $canvasManager.color, supportsOpacity: true)
+                    .frame(width: 0)
+                    .offset(x: -3)
+                ColorPicker("Canvas", selection: $canvasManager.bgColor, supportsOpacity: false)
                     .frame(width: 0)
                     .offset(x: -3)  // offset padding from label
                 Spacer()
             }
+            .foregroundStyle(.white)
 
 
             VStack {
@@ -49,7 +58,8 @@ struct PalatteView: View {
                 .fill(.black.opacity(0.4))
         )
         .onAppear {
-            canvasManager.color = colours[0]
+            canvasManager.bgColor = colours[0]
+            canvasManager.color = colours[1]
         }
     }
 

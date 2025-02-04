@@ -11,6 +11,11 @@ import SwiftData
 import SwiftUI
 
 @Observable final class DataManager {
+    enum EditingState {
+        case idle
+        case editing(_ drawing: Drawing)
+    }
+
     enum Error: Swift.Error {
         case failedToFetchDataFromUrl
         case failedToDecodeArtworkJSON
@@ -18,6 +23,10 @@ import SwiftUI
 
     let modelContext: ModelContext
 
+    // State
+    var editingState: EditingState = .idle
+
+    // Stores
     var drawings = [Drawing]()
     var artworks = [Artwork]()
 
@@ -46,6 +55,7 @@ import SwiftUI
         try modelContext.save()
 
         drawings.append(newDrawing)
+        editingState = .editing(newDrawing)
     }
 
     func deleteAll() {
@@ -53,28 +63,6 @@ import SwiftUI
             modelContext.delete(drawing)
         }
         drawings = []
-    }
-
-    static func fetchPopulousColours(for artwork: Artwork) async -> [Color] {
-        var colourMap = [Color: Int]()
-
-        guard let uiImage = UIImage(named: artwork.assetTag),
-              let pixelReader = ImagePixelReader(image: uiImage) else {
-            return []
-        }
-
-        for x in stride(from: 1, to: Int(uiImage.size.width), by: 2) {
-            for y in stride(from: 1, to: Int(uiImage.size.height), by: 2) {
-                if let pixelColor = pixelReader.colorAt(x: x, y: y) {
-                    colourMap[pixelColor] = (colourMap[pixelColor] ?? 0) + 1
-                }
-            }
-        }
-
-        let sortedColours = colourMap.sorted(by: { $0.value < $1.value })
-        let topSix = sortedColours.prefix(6)
-
-        return Array(topSix.map { $0.key })
     }
 }
 
@@ -98,6 +86,31 @@ extension DataManager {
             print(error)
             throw Error.failedToDecodeArtworkJSON
         }
+    }
+}
+
+extension DataManager {
+    // Fetch 7 most populous colours
+    static func fetchPopulousColours(for artwork: Artwork) async -> [Color] {
+        var colourMap = [Color: Int]()
+
+        guard let uiImage = UIImage(named: artwork.assetTag),
+              let pixelReader = ImagePixelReader(image: uiImage) else {
+            return []
+        }
+
+        for x in stride(from: 1, to: Int(uiImage.size.width), by: 2) {
+            for y in stride(from: 1, to: Int(uiImage.size.height), by: 2) {
+                if let pixelColor = pixelReader.colorAt(x: x, y: y) {
+                    colourMap[pixelColor] = (colourMap[pixelColor] ?? 0) + 1
+                }
+            }
+        }
+
+        let sortedColours = colourMap.sorted(by: { $0.value < $1.value })
+        let topSix = sortedColours.prefix(7)
+
+        return Array(topSix.map { $0.key })
     }
 }
 

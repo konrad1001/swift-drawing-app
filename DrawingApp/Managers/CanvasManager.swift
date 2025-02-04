@@ -15,6 +15,7 @@ import SwiftUI
     var canvas = PKCanvasView()
     var isDrawing = true
     var color: Color = .black
+    var bgColor: Color = .white
     var pencilType: PKInkingTool.InkType = .pencil
     var widthSlider: CGFloat = 0.5
     var widthRange: ClosedRange<CGFloat> = 5...32
@@ -26,6 +27,9 @@ import SwiftUI
     var lastOffset: CGSize = .zero
     var scaledToFit: Bool = true
 
+    // Metadata
+    var canvasSize: CGSize? = nil
+
     func resetInteractableState() {
         currentZoom = 0.0
         totalZoom = 1.0
@@ -34,4 +38,20 @@ import SwiftUI
 
         scaledToFit.toggle()
     }
+
+    func toImage(drawing: Drawing) -> UIImage? {
+        guard let data = drawing.data,
+              let drawing = try? PKDrawing(data: data),
+              let size = self.canvasSize
+        else {
+            return nil
+        }
+
+        let imgRect = CGRect(origin: .zero, size: size)
+        let img = drawing.image(from: imgRect, scale: 1.0)
+
+        return img.withBackground(color: UIColor(self.bgColor))
+    }
 }
+
+

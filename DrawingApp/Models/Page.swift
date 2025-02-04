@@ -6,8 +6,13 @@
 //
 
 import SwiftUICore
+//
+//struct Page: Hashable {
+//    let artwork: Artwork
+//    let colours: [Color]
+//}
 
-struct Page: Hashable {
-    let artwork: Artwork
-    let colours: [Color]
+enum Page: Hashable {
+    case editor(artwork: Artwork, colours: [Color])
+    case stage(artwork: Artwork)
 }

@@ -88,8 +88,6 @@ extension ToolbarView {
                 .background(
                     Circle().fill(.blue)
                         .opacity(isSelected ? 1.0 : 0)
-//                        .transition(.scale)
-
                 )
         }
 

@@ -1,5 +1,5 @@
 //
-//  CanvasPageView.swift
+//  EditorView.swift
 //  DrawingApp
 //
 //  Created by Konrad Painta on 1/23/25.
@@ -9,9 +9,10 @@ import PencilKit
 import SwiftData
 import SwiftUI
 
-struct CanvasPageView: View {
+struct EditorView: View {
     @Environment(CanvasManager.self) var canvasManager
     @Environment(DataManager.self) var dataManager
+    @Environment(NavigationManager.self) var navigationManager
 
     let artwork: Artwork
     let colours: [Color]
@@ -24,9 +25,35 @@ struct CanvasPageView: View {
         }
     }
 
+    init(artwork: Artwork, colours: [Color]) {
+        assert(colours.count == 7)
+        self.artwork = artwork
+        self.colours = colours
+    }
+
     var body: some View {
         GeometryReader { geometryProxy in
             VStack(alignment: .leading, spacing: 16) {
+                // Nav toolbar
+                HStack {
+                    Button {
+                        navigationManager.navigateBack()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                    }
+
+                    Spacer()
+
+                    Button {
+                        navigationManager.navigateOnto(page: .stage(artwork: artwork))
+                    } label: {
+                        Image(systemName: "line.3.horizontal")
+                    }
+                }
+                .font(.title3)
+                .foregroundStyle(.white)
+
+                // Reference
                 HStack(spacing: 0) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 16)
@@ -40,22 +67,31 @@ struct CanvasPageView: View {
 
                     Spacer(minLength: 0)
 
-                    PalatteView(colours: colours)
+                    PalatteView(colours)
                 }
 
                 .frame(height: geometryProxy.size.height * (1/3))
 
+                // Canvas
                 if let mostRecentDrawing {
                     VStack {
-                        CanvasView(drawing: mostRecentDrawing, bgColour: colours.first)
+                        CanvasView(drawing: mostRecentDrawing)
                             .frame(height: geometryProxy.size.width * (4/5))
                     }
                     .padding(.horizontal, -16)
+                    .overlay {
+                        GeometryReader { canvasSizeProxy in
+                            Color.clear
+                                .onAppear {
+                                    canvasManager.canvasSize = canvasSizeProxy.size
+                                }
+                        }
+                    }
                 } else {
                     Button(action: {
                         try? dataManager.createNewDrawing(forTag: artwork.assetTag)
                     }, label: {
-                        VStack {
+                        VStack(spacing: 8) {
                             Spacer()
                             Image(systemName: "plus")
                             HStack {
@@ -66,12 +102,13 @@ struct CanvasPageView: View {
 
                             Spacer()
                         }
+                        .font(.title3)
+                        .foregroundStyle(.white)
                         .background(
                             RoundedRectangle(cornerRadius: 16.0)
                             .fill(.black.opacity(0.4))
                         )
                         .frame(height: geometryProxy.size.width * (4/5))
-
                     })
                 }
 
@@ -79,7 +116,8 @@ struct CanvasPageView: View {
                 ToolbarView()
             }
             .padding(.horizontal)
-            .padding(.top, 78)
+            .padding(.top, 52)
+            .toolbar(.hidden)
         }
         .background(
             ZStack {
@@ -93,7 +131,6 @@ struct CanvasPageView: View {
             }
         )
         .ignoresSafeArea()
-
     }
 }
 
@@ -102,10 +139,11 @@ struct CanvasPageView: View {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: Drawing.self, configurations: config)
 
-        return CanvasPageView(artwork: Artwork.example, colours: [.gray,.orange,.yellow,.green,.blue,.indigo])
+        return EditorView(artwork: Artwork.example, colours: [.gray,.orange,.yellow,.green,.blue,.indigo])
             .modelContainer(container)
             .environment(DataManager(modelContext: container.mainContext))
             .environment(CanvasManager())
+            .environment(NavigationManager())
 
     } catch {
         fatalError("failed to create preview model")

@@ -12,19 +12,15 @@ struct CanvasView: View {
     @Environment(CanvasManager.self) var canvasManager
 
     var drawing: Drawing
-    let bgColour: Color?
 
     var body: some View {
-        UICanvasView(canvasManager: canvasManager, drawing: drawing, bgColour: bgColour)
+        UICanvasView(canvasManager: canvasManager, drawing: drawing)
     }
 }
 
 struct UICanvasView: UIViewRepresentable {
     @Bindable var canvasManager: CanvasManager
-
     @Bindable var drawing: Drawing
-
-    let bgColour: Color?
 
     var width: CGFloat {
         canvasManager.widthSlider * (canvasManager.widthRange.upperBound - canvasManager.widthRange.lowerBound) + canvasManager.widthRange.lowerBound
@@ -57,11 +53,11 @@ struct UICanvasView: UIViewRepresentable {
         let drawing = createPKDrawing(for: drawing)
         canvas.drawing = drawing
 
-        if let bgColour {
-            canvas.backgroundColor = UIColor(bgColour)
-        }
+        canvas.backgroundColor = UIColor(canvasManager.bgColor)
 
         canvas.drawingPolicy = .anyInput
+
+        canvas.isOpaque = false
 
         canvas.tool = canvasManager.isDrawing ? ink : eraser
         canvas.alwaysBounceVertical = true
@@ -78,6 +74,7 @@ struct UICanvasView: UIViewRepresentable {
     
     func updateUIView(_ uiView: PKCanvasView, context: Context) {
         uiView.tool = canvasManager.isDrawing ? ink : eraser
+        uiView.backgroundColor = UIColor(canvasManager.bgColor)
     }
 }
 

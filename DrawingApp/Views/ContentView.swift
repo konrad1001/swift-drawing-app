@@ -28,6 +28,7 @@ struct ContentView: View {
                                             .opacity(phase.isIdentity ? 1 : 0)
                                             .blur(radius: phase.isIdentity ? 0 : 10)
                                     }
+
                             }
                         }
                         .scrollTargetLayout()
@@ -36,7 +37,12 @@ struct ContentView: View {
                 }
             }
             .navigationDestination(for: Page.self) { page in
-                CanvasPageView(artwork: page.artwork, colours: page.colours)
+                switch page {
+                case let .editor(artwork: artwork, colours: colours):
+                    EditorView(artwork: artwork, colours: colours)
+                case let .stage(artwork: artwork):
+                    StagingView(artwork: artwork)
+                }
             }
             .background(.black)
         }
@@ -65,7 +71,7 @@ struct FullScreenView: View {
                     .padding(.vertical, 24)
                     .shadow(radius: 4)
                     .onTapGesture {
-                        navigationManager.navigateOnto(page: Page(artwork: artwork, colours: colours))
+                        navigationManager.navigateOnto(page: .editor(artwork: artwork, colours: colours))
                     }
 
                 VStack(alignment: .leading, spacing: 8) {
@@ -89,7 +95,7 @@ struct FullScreenView: View {
                     HStack {
                         ForEach(0..<6) { index in
                             Rectangle()
-                                .fill(colours.count == 6 ? colours[index] : .black)
+                                .fill(colours.count == 7 ? colours[index] : .black)
                                 .opacity(isLoading ? 0 : 1)
                                 .frame(width: 24, height: 24)
                                 .transition(.opacity)
@@ -98,7 +104,7 @@ struct FullScreenView: View {
 
                         Spacer()
                         Button {
-                            navigationManager.navigateOnto(page: Page(artwork: artwork, colours: colours))
+                            navigationManager.navigateOnto(page: .editor(artwork: artwork, colours: colours))
                         } label: {
                             HStack {
                                 Image(systemName: "paintbrush")
@@ -146,7 +152,7 @@ struct FullScreenView: View {
         return ContentView()
             .modelContainer(container)
             .environment(DataManager(modelContext: container.mainContext))
-            .environment(CanvasManager())
+            .environment(NavigationManager())
 
     } catch {
         fatalError("failed to create preview model")
