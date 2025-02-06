@@ -9,11 +9,15 @@ import SwiftUI
 
 struct PalatteView: View {
     @Environment(CanvasManager.self) var canvasManager
+    @Environment(DataManager.self) var dataManager
 
+    let artwork: Artwork
     let colours: [Color]
 
-    init(_ colours: [Color]) {
+    init(artwork: Artwork, colours: [Color]) {
         assert(colours.count == 7)
+
+        self.artwork = artwork
         self.colours = colours
     }
 
@@ -30,21 +34,23 @@ struct PalatteView: View {
                 ColorPicker("Brush", selection: $canvasManager.color, supportsOpacity: true)
                     .frame(width: 0)
                     .offset(x: -3)
-                ColorPicker("Canvas", selection: $canvasManager.bgColor, supportsOpacity: false)
+                ColorPicker("Canvas", selection: $canvasManager.bgColour, supportsOpacity: false)
                     .frame(width: 0)
                     .offset(x: -3)  // offset padding from label
                 Spacer()
             }
             .foregroundStyle(.white)
 
-
             VStack {
                 iconButton(systemName: "magnifyingglass") {
                     canvasManager.resetInteractableState()
                 }
-                iconButton(systemName: "pencil") {
-                    canvasManager.isDrawing = true
-                    canvasManager.pencilType = .pencil
+                // TODO: rework this, unlimited blank canvas creation
+                iconButton(systemName: "photo.badge.plus.fill") {
+//                    if case .idle = dataManager.editingState {
+                        try? dataManager.createNewDrawing(forTag: artwork.assetTag)
+                    canvasManager.bgColour = colours.randomElement() ?? canvasManager.bgColour
+//                    }
                 }
                 iconButton(systemName: "pencil") {
                     canvasManager.isDrawing = true
@@ -57,9 +63,14 @@ struct PalatteView: View {
             RoundedRectangle(cornerRadius: 16)
                 .fill(.black.opacity(0.4))
         )
-        .onAppear {
-            canvasManager.bgColor = colours[0]
-            canvasManager.color = colours[1]
+//        .onAppear {
+//            canvasManager.bgColour = colours[0]
+//            canvasManager.color = colours[1]
+//        }
+        .onChange(of: canvasManager.bgColour) { _, newColour in
+            if case let .editing(drawing) = dataManager.editingState {
+                drawing.setBgColour(UIColor(newColour))
+            }
         }
     }
 

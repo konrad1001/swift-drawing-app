@@ -9,9 +9,10 @@ import Observation
 import Foundation
 import SwiftData
 import SwiftUI
+import PencilKit
 
 @Observable final class DataManager {
-    enum EditingState {
+    enum EditingState: Equatable {
         case idle
         case editing(_ drawing: Drawing)
     }
@@ -49,8 +50,23 @@ import SwiftUI
         }
     }
 
-    func createNewDrawing(forTag tag: String) throws {
-        let newDrawing = Drawing(data: nil, tag: tag)
+    func selectDrawing(_ drawing: Drawing?) {
+        if let drawing {
+            editingState = .editing(drawing)
+        } else {
+            editingState = .idle
+        }
+    }
+
+    func createNewDrawing(forTag tag: String, withBackgroundColour bgColour: UIColor? = nil) throws {
+        let blankDrawing = PKDrawing()
+
+        let newDrawing = Drawing(data: blankDrawing.dataRepresentation(), tag: tag)
+
+        if let bgColour {
+            newDrawing.setBgColour(bgColour)
+        }
+
         modelContext.insert(newDrawing)
         try modelContext.save()
 
@@ -58,11 +74,24 @@ import SwiftUI
         editingState = .editing(newDrawing)
     }
 
-    func deleteAll() {
+    func deleteDrawing(_ drawing: Drawing) throws {
+        modelContext.delete(drawing)
+        try modelContext.save()
+
+        drawings = drawings.filter { $0.id != drawing.id }
+
+        editingState = .idle
+    }
+
+    func deleteAll() throws {
         for drawing in drawings {
             modelContext.delete(drawing)
         }
+        try modelContext.save()
+
         drawings = []
+
+        editingState = .idle
     }
 }
 

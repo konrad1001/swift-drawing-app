@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftData
-import UIKit
+import SwiftUI
 import PencilKit
 
 @Model
@@ -16,10 +16,30 @@ class Drawing {
     var data: Data?
     var tag: String
 
-    init(id: UUID = UUID(), data: Data? = nil, tag: String) {
+    /*private */var bgColourHex: String
+
+    init(id: UUID = UUID(),
+         data: Data? = nil,
+         bgColourHex: String = "#ffffff",
+         tag: String) {
         self.id = id
         self.data = data
+        self.bgColourHex = bgColourHex
         self.tag = tag
+    }
+
+    func getBgColour() -> UIColor {
+        if let colour = UIColor(hex: bgColourHex) {
+            return colour
+        } else {
+            print("failed to convert hex \(bgColourHex) to uicolor")
+            return  .white
+        }
+
+    }
+
+    func setBgColour(_ colour: UIColor) {
+        bgColourHex = colour.toHex()
     }
 
     func toImage(size: CGSize) -> UIImage? {
@@ -28,8 +48,10 @@ class Drawing {
         }
 
         let imgRect = CGRect(origin: .zero, size: size)
+        let img = drawing.image(from: imgRect, scale: 1.0)
 
-        return drawing.image(from: imgRect, scale: 1.0)
+        return img.withBackground(color: getBgColour())
     }
 }
+
 

@@ -40,8 +40,10 @@ struct ContentView: View {
                 switch page {
                 case let .editor(artwork: artwork, colours: colours):
                     EditorView(artwork: artwork, colours: colours)
+                        .toolbar(.hidden)
                 case let .stage(artwork: artwork):
                     StagingView(artwork: artwork)
+                        .toolbar(.hidden)
                 }
             }
             .background(.black)
@@ -137,7 +139,6 @@ struct FullScreenView: View {
             Task {
                 let colours = await DataManager.fetchPopulousColours(for: artwork)
                 self.colours = colours
-                print("loaded \(colours) for \(artwork.title)")
                 isLoading = false
             }
         }

@@ -8,19 +8,10 @@
 import SwiftUI
 import PencilKit
 
-struct CanvasView: View {
-    @Environment(CanvasManager.self) var canvasManager
-
-    var drawing: Drawing
-
-    var body: some View {
-        UICanvasView(canvasManager: canvasManager, drawing: drawing)
-    }
-}
-
 struct UICanvasView: UIViewRepresentable {
     @Bindable var canvasManager: CanvasManager
-    @Bindable var drawing: Drawing
+    
+    var drawing: Drawing
 
     var width: CGFloat {
         canvasManager.widthSlider * (canvasManager.widthRange.upperBound - canvasManager.widthRange.lowerBound) + canvasManager.widthRange.lowerBound
@@ -43,7 +34,7 @@ struct UICanvasView: UIViewRepresentable {
         guard let data = drawing.data, let drawing = try? PKDrawing(data: data) else {
             return PKDrawing()
         }
-        
+
         return drawing
     }
 
@@ -53,7 +44,7 @@ struct UICanvasView: UIViewRepresentable {
         let drawing = createPKDrawing(for: drawing)
         canvas.drawing = drawing
 
-        canvas.backgroundColor = UIColor(canvasManager.bgColor)
+        canvas.backgroundColor = UIColor(canvasManager.bgColour)
 
         canvas.drawingPolicy = .anyInput
 
@@ -62,9 +53,6 @@ struct UICanvasView: UIViewRepresentable {
         canvas.tool = canvasManager.isDrawing ? ink : eraser
         canvas.alwaysBounceVertical = true
 
-        let toolPicker = PKToolPicker.init()
-        toolPicker.setVisible(true, forFirstResponder: canvas)
-        toolPicker.addObserver(canvas)
         canvas.becomeFirstResponder()
 
         canvas.delegate = context.coordinator
@@ -74,7 +62,7 @@ struct UICanvasView: UIViewRepresentable {
     
     func updateUIView(_ uiView: PKCanvasView, context: Context) {
         uiView.tool = canvasManager.isDrawing ? ink : eraser
-        uiView.backgroundColor = UIColor(canvasManager.bgColor)
+        uiView.backgroundColor = UIColor(canvasManager.bgColour)
     }
 }
 

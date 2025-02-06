@@ -14,16 +14,10 @@ struct EditorView: View {
     @Environment(DataManager.self) var dataManager
     @Environment(NavigationManager.self) var navigationManager
 
+    @State var refreshing = false
+
     let artwork: Artwork
     let colours: [Color]
-
-    var mostRecentDrawing: Drawing? {
-        if true {
-            return dataManager.drawings.filter { $0.tag == artwork.assetTag }.first
-        } else {
-            return Drawing(tag: "a")
-        }
-    }
 
     init(artwork: Artwork, colours: [Color]) {
         assert(colours.count == 7)
@@ -67,49 +61,42 @@ struct EditorView: View {
 
                     Spacer(minLength: 0)
 
-                    PalatteView(colours)
+                    PalatteView(artwork: artwork, colours: colours)
                 }
-
                 .frame(height: geometryProxy.size.height * (1/3))
 
                 // Canvas
-                if let mostRecentDrawing {
-                    VStack {
-                        CanvasView(drawing: mostRecentDrawing)
-                            .frame(height: geometryProxy.size.width * (4/5))
-                    }
-                    .padding(.horizontal, -16)
-                    .overlay {
-                        GeometryReader { canvasSizeProxy in
-                            Color.clear
-                                .onAppear {
-                                    canvasManager.canvasSize = canvasSizeProxy.size
-                                }
+                Group {
+                    switch (dataManager.editingState, refreshing) {
+                    case (.editing, true):
+                        Spacer()
+                    case (.editing(let drawing), false):
+                        VStack {
+                            UICanvasView(canvasManager: canvasManager, drawing: drawing)
                         }
-                    }
-                } else {
-                    Button(action: {
-                        try? dataManager.createNewDrawing(forTag: artwork.assetTag)
-                    }, label: {
-                        VStack(spacing: 8) {
-                            Spacer()
-                            Image(systemName: "plus")
-                            HStack {
-                                Spacer()
-                                Text("New")
-                                Spacer()
+                        .padding(.horizontal, -16)
+                        .onChange(of: drawing) {
+                            // Hack to force UIViewRepresentable to update.
+                            Task {
+                                refreshing = true
+                                canvasManager.bgColour = Color(uiColor: drawing.getBgColour())
+                                try? await Task.sleep(nanoseconds: 500_000)
+                                refreshing = false
                             }
-
-                            Spacer()
                         }
-                        .font(.title3)
-                        .foregroundStyle(.white)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16.0)
-                            .fill(.black.opacity(0.4))
-                        )
-                        .frame(height: geometryProxy.size.width * (4/5))
-                    })
+                    case (.idle, _):
+                        createNewDrawingView(proxy: geometryProxy)
+                            .onAppear {
+                                canvasManager.bgColour = colours[0]
+                                canvasManager.color = colours[1]
+                            }
+                    }
+                }
+                .animation(.default, value: refreshing)
+
+                .frame(height: geometryProxy.size.width * (4/5))
+                .onAppear {
+                    canvasManager.canvasSize = CGSize(width: geometryProxy.size.width, height: geometryProxy.size.width * (4/5))
                 }
 
                 // Toolbar
@@ -117,7 +104,6 @@ struct EditorView: View {
             }
             .padding(.horizontal)
             .padding(.top, 52)
-            .toolbar(.hidden)
         }
         .background(
             ZStack {
@@ -131,6 +117,30 @@ struct EditorView: View {
             }
         )
         .ignoresSafeArea()
+    }
+
+    func createNewDrawingView(proxy: GeometryProxy) -> some View {
+        Button(action: {
+            try? dataManager.createNewDrawing(forTag: artwork.assetTag, withBackgroundColour: UIColor(canvasManager.bgColour))
+        }, label: {
+            VStack(spacing: 8) {
+                Spacer()
+                Image(systemName: "photo.badge.plus.fill")
+                HStack {
+                    Spacer()
+                    Text("New")
+                    Spacer()
+                }
+
+                Spacer()
+            }
+            .font(.title3)
+            .foregroundStyle(.white)
+            .background(
+                RoundedRectangle(cornerRadius: 16.0)
+                    .fill(.black.opacity(0.4))
+            )
+        })
     }
 }
 
