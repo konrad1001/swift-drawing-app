@@ -27,6 +27,12 @@ import PencilKit
 
     // State
     var editingState: EditingState = .idle
+    var firstHistoric: Asset? {
+        assets.first { if case .historic = $0.typeContent { return true } else { return false } }
+    }
+    var firstCustom: Asset? {
+        assets.first { if case .custom = $0.typeContent { return true } else { return false } }
+    }
 
     // Stores
     var drawings = [Drawing]()
@@ -41,8 +47,6 @@ import PencilKit
             print(error)
             return nil
         }
-
-        print("fetched drawings")
 
         if let assetsData = try? self.fetchAssetData() {
             assets = assetsData
@@ -59,7 +63,13 @@ import PencilKit
         assets.append(artwork.asset)
     }
 
-//    func deleteCustomArtwork(forId: String)
+    func deleteCustomArtwork(forId id: UUID) throws {
+        try modelContext.delete(model: CustomArtwork.self, where: #Predicate { artwork in
+            artwork.id == id
+        })
+
+        assets = assets.filter { $0.id != id }
+    }
 
     // MARK: - Drawings
     func selectDrawing(_ drawing: Drawing?) {

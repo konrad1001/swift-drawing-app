@@ -34,6 +34,23 @@ final class ImagePixelReader {
         self.pointer = pointer
     }
 
+    init?(imageData: Data) {
+        guard let uiImage = UIImage(data: imageData) else {
+            return nil
+        }
+
+        self.image = uiImage
+
+        guard let cfdata = uiImage.cgImage?.dataProvider?.data,
+              let pointer = CFDataGetBytePtr(cfdata) else {
+            return nil
+        }
+
+        self.scale = Int(image.scale)
+        self.data = cfdata
+        self.pointer = pointer
+    }
+
     func colorAt(x: Int, y: Int) -> Color? {
         guard (CGFloat(x) < image.size.width) && (CGFloat(y) < image.size.height) else {
             return nil

@@ -5,7 +5,6 @@
 //  Created by Konrad Painta on 1/23/25.
 //
 
-import Foundation
 import SwiftData
 import SwiftUI
 import PencilKit
@@ -16,7 +15,7 @@ class Drawing {
     var data: Data?
     var tag: String
 
-    /*private */var bgColourHex: String
+    private var bgColourHex: String
 
     init(id: UUID = UUID(),
          data: Data? = nil,
@@ -32,10 +31,8 @@ class Drawing {
         if let colour = UIColor(hex: bgColourHex) {
             return colour
         } else {
-            print("failed to convert hex \(bgColourHex) to uicolor")
             return  .white
         }
-
     }
 
     func setBgColour(_ colour: UIColor) {

@@ -40,10 +40,8 @@ struct PalatteView: View {
                 }
                 // TODO: rework this, unlimited blank canvas creation
                 iconButton(systemName: "photo.badge.plus.fill") {
-//                    if case .idle = dataManager.editingState {
-                    try? dataManager.createNewDrawing(forTag: asset.id)
+                    try? dataManager.createNewDrawing(forTag: asset.assetTag)
                     canvasManager.bgColour = colours.randomElement() ?? canvasManager.bgColour
-//                    }
                 }
                 iconButton(systemName: "pencil") {
                     canvasManager.isDrawing = true
@@ -56,10 +54,6 @@ struct PalatteView: View {
             RoundedRectangle(cornerRadius: 16)
                 .fill(.black.opacity(0.4))
         )
-//        .onAppear {
-//            canvasManager.bgColour = colours[0]
-//            canvasManager.color = colours[1]
-//        }
         .onChange(of: canvasManager.bgColour) { _, newColour in
             if case let .editing(drawing) = dataManager.editingState {
                 drawing.setBgColour(UIColor(newColour))

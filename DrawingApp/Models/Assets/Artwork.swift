@@ -7,21 +7,21 @@
 
 import SwiftUI
 
-struct Artwork: Codable, Hashable, Identifiable {
-    let id: String
+struct Artwork: Codable {
+    let tag: String
     let title: String
     let description: String
     let tooltip: String
 
     enum CodingKeys: String, CodingKey {
-        case id
+        case tag
         case title
         case description
         case tooltip
     }
 
-    init(id: String, title: String, description: String, tooltip: String) {
-        self.id = id
+    init(tag: String, title: String, description: String, tooltip: String) {
+        self.tag = tag
         self.title = title
         self.description = description
         self.tooltip = tooltip
@@ -31,15 +31,16 @@ struct Artwork: Codable, Hashable, Identifiable {
 extension Artwork {
     var asset: Asset {
         .init(
-            image: Image(id),
-            id: id,
+            typeContent: .historic(assetTag: tag),
+            id: UUID(),
             title: title,
             description: description,
-            tooltip: tooltip)
+            tooltip: tooltip,
+            assetTag: tag)
     }
 
     static let example = Artwork(
-            id: "starry_night",
+            tag: "starry_night",
             title: "Mona Lisa (Preview)",
             description: "A preview of the Mona Lisa description.",
             tooltip: "Preview tooltip: Try capturing the smile."

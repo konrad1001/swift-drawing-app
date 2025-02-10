@@ -9,6 +9,7 @@ import SwiftUI
 
 struct FullScreenView: View {
     @Environment(NavigationManager.self) var navigationManager
+    @Environment(DataManager.self) var dataManager
 
     let asset: Asset
     let proxy: GeometryProxy
@@ -20,7 +21,6 @@ struct FullScreenView: View {
     var body: some View {
         Group {
             VStack(alignment: .leading, spacing: 0) {
-//                Spacer()
                 asset.image
                     .resizable()
                     .scaledToFill()
@@ -30,6 +30,26 @@ struct FullScreenView: View {
                     .shadow(radius: 4)
                     .onTapGesture {
                         navigationManager.navigateOnto(page: .editor(asset: asset, colours: colours))
+                    }
+                    .opacity(isLoading ? 0.7 : 1)
+                    .disabled(isLoading)
+                    .animation(.default, value: isLoading)
+                    .overlay(alignment: .topTrailing) {
+                        if case .custom = asset.typeContent {
+                            Button {
+                                try? dataManager.deleteCustomArtwork(forId: asset.id)
+                            } label: {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 24))
+                                    .padding()
+                                    .background {
+                                        Circle()
+                                            .fill(.black.opacity(0.4))
+                                    }
+                            }
+                            .padding()
+                            .padding(.top, 12)
+                        }
                     }
 
                 VStack(alignment: .leading, spacing: 8) {

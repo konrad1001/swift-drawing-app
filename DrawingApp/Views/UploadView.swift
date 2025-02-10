@@ -132,8 +132,10 @@ struct UploadView: View {
         do {
             try dataManager.createCustomArtwork(newCustom)
 
+            let colours = await newCustom.asset.fetchPopulousColours()
+
             navigationManager.isUploadedPresented = false
-            navigationManager.navigateOnto(page: .editor(asset: newCustom.asset, colours: Array(repeating: Color.black, count: 7)))
+            navigationManager.navigateOnto(page: .editor(asset: newCustom.asset, colours: colours))
         }
     }
 }

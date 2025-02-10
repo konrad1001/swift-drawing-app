@@ -18,7 +18,7 @@ struct StagingView: View {
 
     var previousDrawings: [Drawing] {
         if true {
-            return dataManager.drawings.filter { $0.tag == asset.id}
+            return dataManager.drawings.filter { $0.tag == asset.assetTag}
         } else {
             return [Drawing(tag: "a"), Drawing(tag: "a"), Drawing(tag: "a")]
         }
@@ -50,7 +50,7 @@ struct StagingView: View {
 
                 // Focused drawing
                 Group {
-                    if case let .editing(drawing) = dataManager.editingState, drawing.tag == asset.id {
+                    if case let .editing(drawing) = dataManager.editingState, drawing.tag == asset.assetTag {
                         imageView(for: drawing)
                     } else {
                         RoundedRectangle(cornerRadius: 16.0)

@@ -115,7 +115,7 @@ struct EditorView: View {
 
     func createNewDrawingView(proxy: GeometryProxy) -> some View {
         Button(action: {
-            try? dataManager.createNewDrawing(forTag: asset.id, withBackgroundColour: UIColor(canvasManager.bgColour))
+            try? dataManager.createNewDrawing(forTag: asset.assetTag, withBackgroundColour: UIColor(canvasManager.bgColour))
         }, label: {
             VStack(spacing: 8) {
                 Spacer()

@@ -5,13 +5,27 @@
 //  Created by Konrad Painta on 1/21/25.
 //
 
-
 import SwiftData
 import SwiftUI
 
 struct ContentView: View {
     @Environment(NavigationManager.self) var navigationManager
     @Environment(DataManager.self) var dataManager
+
+    @State var scrollFocusId: UUID?
+
+    var focusingHistoricAssets: Bool {
+        if scrollFocusId == nil { return true }
+
+        let focusedAsset = dataManager.assets.first { asset in
+            asset.id == scrollFocusId
+        }
+
+        if case .historic = focusedAsset?.typeContent {
+            return true
+        }
+        return false
+    }
 
     var body: some View {
         @Bindable var navigationManager = navigationManager
@@ -28,21 +42,32 @@ struct ContentView: View {
                                             .opacity(phase.isIdentity ? 1 : 0)
                                             .blur(radius: phase.isIdentity ? 0 : 10)
                                     }
-
+                                    .id(asset.id)
                             }
                         }
                         .scrollTargetLayout()
                     }
+                    .animation(.default, value: dataManager.assets)
+                    .scrollPosition(id: $scrollFocusId)
                     .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
                     .overlay(alignment: .bottom) {
                         HStack(spacing: 16) {
                             Button("Historic") {
-                                print("historic")
+                                withAnimation {
+                                    scrollFocusId = dataManager.firstHistoric?.id
+                                    scrollViewProxy.scrollTo(dataManager.firstHistoric?.id)
+                                }
                             }
+                            .foregroundStyle(focusingHistoricAssets ? .white : .gray)
 
                             Button("Custom") {
-                                print("custom")
+                                withAnimation {
+                                    scrollFocusId = dataManager.firstCustom?.id
+                                    scrollViewProxy.scrollTo(dataManager.firstCustom?.id)
+                                }
                             }
+                            .foregroundStyle(!focusingHistoricAssets ? .white : .gray)
+
 
                             Spacer()
 

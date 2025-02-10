@@ -24,13 +24,22 @@ class CustomArtwork {
 }
 
 extension CustomArtwork {
+    var shortDate: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+
+        return formatter.string(from: self.dateCreated)
+    }
     var asset: Asset {
         .init(
-            image: Image(uiImage: UIImage(data: imageData)!),
-            id: id.uuidString,
+            typeContent: .custom(imageData: imageData),
+            id: id,
             title: title,
             description: "",
-            tooltip: "")
+            tooltip: "Created on \(shortDate)",
+            assetTag: dateCreated.ISO8601Format() + title
+        )
     }
 }
 
