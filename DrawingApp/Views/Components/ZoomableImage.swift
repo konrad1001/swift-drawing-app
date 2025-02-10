@@ -16,11 +16,11 @@ struct ZoomableImage: View {
     var offset: CGSize { canvasManager.offset }
     var lastOffset: CGSize { canvasManager.lastOffset }
 
-    let artwork: Artwork
+    let asset: Asset
 
     var body: some View {
         Group {
-            Image(artwork.assetTag)
+            asset.image
                 .resizable()
                 .aspectRatio(contentMode: canvasManager.scaledToFit ? .fit : .fill)
                 .clipShape(RoundedRectangle(cornerRadius: 16.0))

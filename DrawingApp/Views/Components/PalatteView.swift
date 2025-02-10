@@ -11,15 +11,8 @@ struct PalatteView: View {
     @Environment(CanvasManager.self) var canvasManager
     @Environment(DataManager.self) var dataManager
 
-    let artwork: Artwork
+    let asset: Asset
     let colours: [Color]
-
-    init(artwork: Artwork, colours: [Color]) {
-        assert(colours.count == 7)
-
-        self.artwork = artwork
-        self.colours = colours
-    }
 
     var body: some View {
         @Bindable var canvasManager = canvasManager
@@ -48,7 +41,7 @@ struct PalatteView: View {
                 // TODO: rework this, unlimited blank canvas creation
                 iconButton(systemName: "photo.badge.plus.fill") {
 //                    if case .idle = dataManager.editingState {
-                        try? dataManager.createNewDrawing(forTag: artwork.assetTag)
+                    try? dataManager.createNewDrawing(forTag: asset.id)
                     canvasManager.bgColour = colours.randomElement() ?? canvasManager.bgColour
 //                    }
                 }

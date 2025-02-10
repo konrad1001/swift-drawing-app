@@ -16,14 +16,8 @@ struct EditorView: View {
 
     @State var refreshing = false
 
-    let artwork: Artwork
+    let asset: Asset
     let colours: [Color]
-
-    init(artwork: Artwork, colours: [Color]) {
-        assert(colours.count == 7)
-        self.artwork = artwork
-        self.colours = colours
-    }
 
     var body: some View {
         GeometryReader { geometryProxy in
@@ -39,7 +33,7 @@ struct EditorView: View {
                     Spacer()
 
                     Button {
-                        navigationManager.navigateOnto(page: .stage(artwork: artwork))
+                        navigationManager.navigateOnto(page: .stage(asset: asset))
                     } label: {
                         Image(systemName: "line.3.horizontal")
                     }
@@ -52,7 +46,7 @@ struct EditorView: View {
                     ZStack {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(.black.opacity(0.4))
-                        ZoomableImage(artwork: artwork)
+                        ZoomableImage(asset: asset)
                     }
                     .frame(height: geometryProxy.size.height * (1/3))
                     .frame(width: geometryProxy.size.width * (3/5))
@@ -61,7 +55,7 @@ struct EditorView: View {
 
                     Spacer(minLength: 0)
 
-                    PalatteView(artwork: artwork, colours: colours)
+                    PalatteView(asset: asset, colours: colours)
                 }
                 .frame(height: geometryProxy.size.height * (1/3))
 
@@ -108,7 +102,7 @@ struct EditorView: View {
         .background(
             ZStack {
                 Color.black
-                Image(artwork.assetTag)
+                asset.image
                     .resizable()
                     .saturation(0.6)
                     .scaledToFill()
@@ -121,7 +115,7 @@ struct EditorView: View {
 
     func createNewDrawingView(proxy: GeometryProxy) -> some View {
         Button(action: {
-            try? dataManager.createNewDrawing(forTag: artwork.assetTag, withBackgroundColour: UIColor(canvasManager.bgColour))
+            try? dataManager.createNewDrawing(forTag: asset.id, withBackgroundColour: UIColor(canvasManager.bgColour))
         }, label: {
             VStack(spacing: 8) {
                 Spacer()
@@ -144,12 +138,12 @@ struct EditorView: View {
     }
 }
 
-#Preview {
+#Preview {  
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: Drawing.self, configurations: config)
 
-        return EditorView(artwork: Artwork.example, colours: [.gray,.orange,.yellow,.green,.blue,.indigo])
+        return EditorView(asset: Artwork.example.asset, colours: [.gray,.orange,.yellow,.green,.blue,.indigo])
             .modelContainer(container)
             .environment(DataManager(modelContext: container.mainContext))
             .environment(CanvasManager())

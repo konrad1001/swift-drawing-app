@@ -5,14 +5,9 @@
 //  Created by Konrad Painta on 1/30/25.
 //
 
-import SwiftUICore
-//
-//struct Page: Hashable {
-//    let artwork: Artwork
-//    let colours: [Color]
-//}
+import SwiftUI
 
 enum Page: Hashable {
-    case editor(artwork: Artwork, colours: [Color])
-    case stage(artwork: Artwork)
+    case editor(asset: Asset, colours: [Color])
+    case stage(asset: Asset)
 }

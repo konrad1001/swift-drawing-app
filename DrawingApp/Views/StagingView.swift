@@ -14,19 +14,11 @@ struct StagingView: View {
     @Environment(CanvasManager.self) var canvasManager
     @Environment(NavigationManager.self) var navigationManager
 
-    let artwork: Artwork
-
-    var mostRecentDrawing: Drawing? {
-        if true {
-            return dataManager.drawings.filter { $0.tag == artwork.assetTag }.first
-        } else {
-            return Drawing(tag: "a")
-        }
-    }
+    let asset: Asset
 
     var previousDrawings: [Drawing] {
         if true {
-            return dataManager.drawings.filter { $0.tag == artwork.assetTag }
+            return dataManager.drawings.filter { $0.tag == asset.id}
         } else {
             return [Drawing(tag: "a"), Drawing(tag: "a"), Drawing(tag: "a")]
         }
@@ -58,7 +50,7 @@ struct StagingView: View {
 
                 // Focused drawing
                 Group {
-                    if case let .editing(drawing) = dataManager.editingState, drawing.tag == artwork.assetTag {
+                    if case let .editing(drawing) = dataManager.editingState, drawing.tag == asset.id {
                         imageView(for: drawing)
                     } else {
                         RoundedRectangle(cornerRadius: 16.0)
@@ -89,7 +81,7 @@ struct StagingView: View {
                                     Text("No saved drawings of ")
                                     Spacer()
                                 }
-                                Text(artwork.title).underline() + Text(" found.")
+                                Text(asset.title).underline() + Text(" found.")
                                 Spacer()
                             }
                             .font(.title3)
@@ -124,7 +116,7 @@ struct StagingView: View {
         .background(
             ZStack {
                 Color.black
-                Image(artwork.assetTag)
+                asset.image
                     .resizable()
                     .saturation(0.6)
                     .scaledToFill()
@@ -197,7 +189,7 @@ struct ButtonPanelView: View {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: Drawing.self, configurations: config)
 
-        return StagingView(artwork: Artwork.example)
+        return StagingView(asset: Artwork.example.asset)
             .modelContainer(container)
             .environment(DataManager(modelContext: container.mainContext))
             .environment(CanvasManager())

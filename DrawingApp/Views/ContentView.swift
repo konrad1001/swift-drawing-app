@@ -21,8 +21,8 @@ struct ContentView: View {
                 ScrollViewReader { scrollViewProxy in
                     ScrollView {
                         LazyVStack {
-                            ForEach(dataManager.artworks) { artwork in
-                                FullScreenView(artwork: artwork, proxy: geometryProxy)
+                            ForEach(dataManager.assets) { asset in
+                                FullScreenView(asset: asset, proxy: geometryProxy)
                                     .scrollTransition { content, phase in
                                         content
                                             .opacity(phase.isIdentity ? 1 : 0)
@@ -34,113 +34,42 @@ struct ContentView: View {
                         .scrollTargetLayout()
                     }
                     .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
+                    .overlay(alignment: .bottom) {
+                        HStack(spacing: 16) {
+                            Button("Historic") {
+                                print("historic")
+                            }
+
+                            Button("Custom") {
+                                print("custom")
+                            }
+
+                            Spacer()
+
+                            Button("Upload") {
+                                navigationManager.isUploadedPresented = true
+                            }
+                            .foregroundStyle(navigationManager.isUploadedPresented ? .white : .gray)
+                        }
+                        .foregroundStyle(.gray)
+                        .padding(.horizontal, 64)
+                    }
                 }
             }
             .navigationDestination(for: Page.self) { page in
                 switch page {
-                case let .editor(artwork: artwork, colours: colours):
-                    EditorView(artwork: artwork, colours: colours)
+                case let .editor(asset: asset, colours: colours):
+                    EditorView(asset: asset, colours: colours)
                         .toolbar(.hidden)
-                case let .stage(artwork: artwork):
-                    StagingView(artwork: artwork)
+                case let .stage(asset: asset):
+                    StagingView(asset: asset)
                         .toolbar(.hidden)
                 }
             }
+            .sheet(isPresented: $navigationManager.isUploadedPresented, content: {
+                UploadView()
+            })
             .background(.black)
-        }
-    }
-}
-
-struct FullScreenView: View {
-    @Environment(NavigationManager.self) var navigationManager
-
-    let artwork: Artwork
-    let proxy: GeometryProxy
-
-    @State var colours: [Color] = []
-
-    @State var isLoading = true
-
-    var body: some View {
-        Group {
-            VStack(alignment: .leading, spacing: 0) {
-                Spacer()
-                Image(artwork.assetTag)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 300, height: 300)
-                    .clipShape(RoundedRectangle(cornerRadius: 16.0))
-                    .padding(.vertical, 24)
-                    .shadow(radius: 4)
-                    .onTapGesture {
-                        navigationManager.navigateOnto(page: .editor(artwork: artwork, colours: colours))
-                    }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text(artwork.title)
-                            .font(.title.bold())
-                        Spacer()
-                    }
-
-                    Text(artwork.description)
-                        .padding(.bottom, 32)
-
-                    Label {
-                        Text(artwork.tooltip)
-                    } icon: {
-                        Image(systemName: "info.circle")
-                    }
-                    .foregroundStyle(.gray)
-                    .padding(.bottom, 32)
-
-                    HStack {
-                        ForEach(0..<6) { index in
-                            Rectangle()
-                                .fill(colours.count == 7 ? colours[index] : .black)
-                                .opacity(isLoading ? 0 : 1)
-                                .frame(width: 24, height: 24)
-                                .transition(.opacity)
-                        }
-                        .animation(.default, value: colours)
-
-                        Spacer()
-                        Button {
-                            navigationManager.navigateOnto(page: .editor(artwork: artwork, colours: colours))
-                        } label: {
-                            HStack {
-                                Image(systemName: "paintbrush")
-                                    .font(.system(size: 24))
-                                    .padding()
-                                    .foregroundStyle(isLoading ? .gray : .white)
-                            }
-                        }
-                        .opacity(isLoading ? 0.3 : 1)
-                        .disabled(isLoading)
-                    }
-                    .padding(.trailing)
-                }
-                .foregroundStyle(.white)
-
-                Spacer()
-            }
-            .padding()
-            .background(
-                Image(artwork.assetTag)
-                    .resizable()
-                    .saturation(0.6)
-                    .scaledToFill()
-                    .blur(radius: 20)
-                    .opacity(0.6)
-            )
-            .frame(minHeight: proxy.size.height + 40)
-        }
-        .onAppear {
-            Task {
-                let colours = await DataManager.fetchPopulousColours(for: artwork)
-                self.colours = colours
-                isLoading = false
-            }
         }
     }
 }

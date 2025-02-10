@@ -14,7 +14,7 @@ struct DrawingAppApp: App {
     let dataManager: DataManager
 
     init() {
-        guard let container = try? ModelContainer(for: Drawing.self),
+        guard let container = try? ModelContainer(for: Drawing.self, CustomArtwork.self),
               let dataManager = DataManager(modelContext: container.mainContext) else {
             fatalError("Data manager could not be initialised")
         }

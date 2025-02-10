@@ -10,6 +10,7 @@ import SwiftUI
 
 @Observable final class NavigationManager {
     var path = NavigationPath()
+    var isUploadedPresented: Bool = false
 
     func navigateOnto(page: Page) {
         path.append(page)

@@ -20,6 +20,7 @@ import PencilKit
     enum Error: Swift.Error {
         case failedToFetchDataFromUrl
         case failedToDecodeArtworkJSON
+        case failedToLoadCustomArtworksFromData
     }
 
     let modelContext: ModelContext
@@ -29,7 +30,7 @@ import PencilKit
 
     // Stores
     var drawings = [Drawing]()
-    var artworks = [Artwork]()
+    var assets = [Asset]()
 
     init?(modelContext: ModelContext) {
         self.modelContext = modelContext
@@ -43,13 +44,24 @@ import PencilKit
 
         print("fetched drawings")
 
-        if let artworksData = try? self.fetchArtworkData() {
-            artworks = artworksData
+        if let assetsData = try? self.fetchAssetData() {
+            assets = assetsData
         } else {
             return nil
         }
     }
 
+    // MARK: - Assets
+    func createCustomArtwork(_ artwork: CustomArtwork) throws {
+        modelContext.insert(artwork)
+        try modelContext.save()
+
+        assets.append(artwork.asset)
+    }
+
+//    func deleteCustomArtwork(forId: String)
+
+    // MARK: - Drawings
     func selectDrawing(_ drawing: Drawing?) {
         if let drawing {
             editingState = .editing(drawing)
@@ -83,7 +95,7 @@ import PencilKit
         editingState = .idle
     }
 
-    func deleteAll() throws {
+    func deleteAllDrawings() throws {
         for drawing in drawings {
             modelContext.delete(drawing)
         }
@@ -102,44 +114,29 @@ extension DataManager {
         drawings = try modelContext.fetch(descriptor)
     }
 
-    private func fetchArtworkData() throws -> [Artwork] {
+    private func fetchCustomAssets() throws -> [Asset] {
+        let descriptor = FetchDescriptor<CustomArtwork>()
+        return try modelContext.fetch(descriptor).map { $0.asset }
+    }
+
+    private func fetchAssetData() throws -> [Asset] {
         guard let url = Bundle.main.url(forResource: "Data", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
             throw Error.failedToFetchDataFromUrl
         }
 
+        guard let customAssets = try? fetchCustomAssets() else {
+            throw Error.failedToLoadCustomArtworksFromData
+        }
+
         do {
             let data = try JSONDecoder().decode(ArtworkData.self, from: data)
-            return data.artworks
+            let assets = data.artworks.map { $0.asset }
+            return assets + customAssets
         } catch {
             print(error)
             throw Error.failedToDecodeArtworkJSON
         }
-    }
-}
-
-extension DataManager {
-    // Fetch 7 most populous colours
-    static func fetchPopulousColours(for artwork: Artwork) async -> [Color] {
-        var colourMap = [Color: Int]()
-
-        guard let uiImage = UIImage(named: artwork.assetTag),
-              let pixelReader = ImagePixelReader(image: uiImage) else {
-            return []
-        }
-
-        for x in stride(from: 1, to: Int(uiImage.size.width), by: 2) {
-            for y in stride(from: 1, to: Int(uiImage.size.height), by: 2) {
-                if let pixelColor = pixelReader.colorAt(x: x, y: y) {
-                    colourMap[pixelColor] = (colourMap[pixelColor] ?? 0) + 1
-                }
-            }
-        }
-
-        let sortedColours = colourMap.sorted(by: { $0.value < $1.value })
-        let topSix = sortedColours.prefix(7)
-
-        return Array(topSix.map { $0.key })
     }
 }
 
