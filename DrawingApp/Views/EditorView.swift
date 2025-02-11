@@ -19,6 +19,13 @@ struct EditorView: View {
     let asset: Asset
     let colours: [Color]
 
+    var focusedDrawing: Drawing? {
+        if case let .editing(drawing) = dataManager.editingState[asset], drawing.id == asset.id {
+            return drawing
+        }
+        return nil
+    }
+
     var body: some View {
         GeometryReader { geometryProxy in
             VStack(alignment: .leading, spacing: 16) {
@@ -61,7 +68,7 @@ struct EditorView: View {
 
                 // Canvas
                 Group {
-                    switch (dataManager.editingState, refreshing) {
+                    switch (dataManager.editingState[asset], refreshing) {
                     case (.editing, true):
                         Spacer()
                     case (.editing(let drawing), false):
@@ -78,7 +85,10 @@ struct EditorView: View {
                                 refreshing = false
                             }
                         }
-                    case (.idle, _):
+                        .onAppear {
+                            canvasManager.bgColour = Color(drawing.getBgColour())
+                        }
+                    default:
                         createNewDrawingView(proxy: geometryProxy)
                             .onAppear {
                                 canvasManager.bgColour = colours[0]
@@ -115,21 +125,29 @@ struct EditorView: View {
 
     func createNewDrawingView(proxy: GeometryProxy) -> some View {
         Button(action: {
-            try? dataManager.createNewDrawing(forTag: asset.assetTag, withBackgroundColour: UIColor(canvasManager.bgColour))
+            try? dataManager.createNewDrawing(forAsset: asset, withBackgroundColour: UIColor(canvasManager.bgColour))
         }, label: {
             VStack(spacing: 8) {
                 Spacer()
                 Image(systemName: "photo.badge.plus.fill")
+                    .font(.title3)
+                    .foregroundStyle(.white)
                 HStack {
                     Spacer()
                     Text("New")
+                        .font(.title3)
+                        .foregroundStyle(.white)
                     Spacer()
                 }
+                .padding(.bottom, 16)
+
+                Text("Tap on the \(Image(systemName: "line.3.horizontal")) to continue previous drawings.")
+                    .foregroundStyle(.gray)
+                    .padding(.horizontal, 32)
 
                 Spacer()
             }
-            .font(.title3)
-            .foregroundStyle(.white)
+
             .background(
                 RoundedRectangle(cornerRadius: 16.0)
                     .fill(.black.opacity(0.4))
@@ -143,7 +161,7 @@ struct EditorView: View {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: Drawing.self, configurations: config)
 
-        return EditorView(asset: Artwork.example.asset, colours: [.gray,.orange,.yellow,.green,.blue,.indigo])
+        return EditorView(asset: Artwork.example.asset, colours: Array(repeating: Color.black, count: 7))
             .modelContainer(container)
             .environment(DataManager(modelContext: container.mainContext))
             .environment(CanvasManager())

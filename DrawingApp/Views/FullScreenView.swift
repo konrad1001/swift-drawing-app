@@ -40,15 +40,15 @@ struct FullScreenView: View {
                                 try? dataManager.deleteCustomArtwork(forId: asset.id)
                             } label: {
                                 Image(systemName: "trash")
-                                    .font(.system(size: 24))
-                                    .padding()
+                                    .font(.system(size: 20))
+                                    .foregroundStyle(.gray)
+                                    .padding(12)
                                     .background {
                                         Circle()
                                             .fill(.black.opacity(0.4))
                                     }
                             }
-                            .padding()
-                            .padding(.top, 12)
+                            .offset(x: -12, y: 32)
                         }
                     }
 

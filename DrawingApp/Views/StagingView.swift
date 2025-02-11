@@ -17,15 +17,13 @@ struct StagingView: View {
     let asset: Asset
 
     var previousDrawings: [Drawing] {
-        if true {
-            return dataManager.drawings.filter { $0.tag == asset.assetTag}
-        } else {
-            return [Drawing(tag: "a"), Drawing(tag: "a"), Drawing(tag: "a")]
-        }
+        let filteredDrawings = dataManager.drawings.filter { $0.tag == asset.assetTag}
+
+        return filteredDrawings.sorted(by: { $0.dateCreated > $1.dateCreated })
     }
 
     var selectedDrawing: Drawing? {
-        if case let .editing(drawing) = dataManager.editingState {
+        if case let .editing(drawing) = dataManager.editingState[asset] {
             return drawing
         } else {
             return nil
@@ -50,7 +48,7 @@ struct StagingView: View {
 
                 // Focused drawing
                 Group {
-                    if case let .editing(drawing) = dataManager.editingState, drawing.tag == asset.assetTag {
+                    if case let .editing(drawing) = dataManager.editingState[asset], drawing.tag == asset.assetTag {
                         imageView(for: drawing)
                     } else {
                         RoundedRectangle(cornerRadius: 16.0)
@@ -61,7 +59,7 @@ struct StagingView: View {
                 .frame(height: proxy.size.height * (1/4))
 
                 // Buttons
-                ButtonPanelView()
+                ButtonPanelView(asset: asset)
                     .padding(.bottom, 32)
 
 
@@ -76,16 +74,15 @@ struct StagingView: View {
                             VStack(spacing: 8) {
                                 Spacer()
                                 Image(systemName: "clock")
-                                HStack {
-                                    Spacer()
-                                    Text("No saved drawings of ")
-                                    Spacer()
-                                }
-                                Text(asset.title).underline() + Text(" found.")
+
+                                Text("No saved drawings of ") + Text(asset.title).underline() + Text(" found.")
+
                                 Spacer()
                             }
                             .font(.title3)
                             .foregroundStyle(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 48)
                         } else {
                             ScrollView(.horizontal) {
                                 HStack(spacing: 8) {
@@ -97,10 +94,11 @@ struct StagingView: View {
                                                     .stroke(.blue, lineWidth: selectedDrawing == drawing ? 5 : 0)
                                             )
                                             .onTapGesture {
-                                                dataManager.selectDrawing(drawing)
+                                                dataManager.selectDrawing(drawing, forAsset: asset)
                                             }
                                     }
                                 }
+                                .animation(.easeInOut, value: previousDrawings)
                             }
                         }
                     }
@@ -145,34 +143,58 @@ struct ButtonPanelView: View {
     @Environment(CanvasManager.self) var canvasManager
 
     @State var userDidSave = false
+    @State var showDeletionAlert = false
+
+    let asset: Asset
 
     var isEnabled: Bool {
-        if case .editing = dataManager.editingState { return true }
+        if case .editing = dataManager.editingState[asset] { return true }
         return false
     }
 
     var body: some View {
         HStack {
-            iconButton(systemName: userDidSave ? "checkmark.circle.fill" :  "square.and.arrow.down") {
-                guard case let .editing(drawing) = dataManager.editingState,
+            iconButton(systemName: userDidSave ? "checkmark.circle.fill" : "square.and.arrow.down") {
+                guard case let .editing(drawing) = dataManager.editingState[asset],
                         let size = canvasManager.canvasSize,
                         let image = drawing.toImage(size: size) else {
                     return
                 }
-                userDidSave = true
+                let imageSaver = ImageSaver {
 
-                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                }
+
+                userDidSave.toggle()
+                print(userDidSave)
+
+                withAnimation(.default.delay(1.0)) {
+                    userDidSave.toggle()
+                    print(userDidSave)
+
+                }
+
+                imageSaver.saveToCameraRoll(image: image)
             }
 
             iconButton(systemName: "trash") {
-                guard case let .editing(drawing) = dataManager.editingState else  {
+                guard case .editing = dataManager.editingState[asset] else  {
                     return
                 }
 
-                try? dataManager.deleteDrawing(drawing)
+                showDeletionAlert = true
+
+//                try? dataManager.deleteDrawing(drawing)
             }
         }
         .foregroundStyle(isEnabled ? .white : .gray)
+        .alert("Careful!", isPresented: $showDeletionAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Okay") {
+                try? dataManager.clearDrawingForAsset(asset)
+            }
+        } message: {
+            Text("Are you sure you want to delete this drawing?")
+        }
     }
 
     func iconButton(systemName: String, bold: Bool = true, _ action: @escaping () -> Void) -> some View {
@@ -180,6 +202,23 @@ struct ButtonPanelView: View {
             Image(systemName: systemName)
                 .font(bold ? .title3.bold() : .title3)
                 .padding(12)
+        }
+        .contentTransition(.symbolEffect(.replace))
+    }
+
+    class ImageSaver: NSObject {
+        var callback: () -> Void
+
+        init(callback: @escaping () -> Void) {
+            self.callback = callback
+        }
+
+        func saveToCameraRoll(image: UIImage) {
+            UIImageWriteToSavedPhotosAlbum(image, self, #selector(saveCompleted), nil)
+        }
+
+        @objc func saveCompleted(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+            callback()
         }
     }
 }

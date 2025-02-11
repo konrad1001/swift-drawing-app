@@ -26,7 +26,8 @@ import PencilKit
     let modelContext: ModelContext
 
     // State
-    var editingState: EditingState = .idle
+    var editingState: [Asset: EditingState] = [:]
+
     var firstHistoric: Asset? {
         assets.first { if case .historic = $0.typeContent { return true } else { return false } }
     }
@@ -43,15 +44,14 @@ import PencilKit
 
         do {
             try self.fetchDrawingData()
+            try self.fetchAssetData()
         } catch {
             print(error)
             return nil
         }
 
-        if let assetsData = try? self.fetchAssetData() {
-            assets = assetsData
-        } else {
-            return nil
+        for asset in assets {
+            editingState[asset] = .idle
         }
     }
 
@@ -69,21 +69,22 @@ import PencilKit
         })
 
         assets = assets.filter { $0.id != id }
+        editingState = editingState.filter { $0.key.id != id }
     }
 
     // MARK: - Drawings
-    func selectDrawing(_ drawing: Drawing?) {
+    func selectDrawing(_ drawing: Drawing?, forAsset asset: Asset) {
         if let drawing {
-            editingState = .editing(drawing)
+            editingState[asset] = .editing(drawing)
         } else {
-            editingState = .idle
+            editingState[asset] = .idle
         }
     }
 
-    func createNewDrawing(forTag tag: String, withBackgroundColour bgColour: UIColor? = nil) throws {
+    func createNewDrawing(forAsset asset: Asset, withBackgroundColour bgColour: UIColor? = nil) throws {
         let blankDrawing = PKDrawing()
 
-        let newDrawing = Drawing(data: blankDrawing.dataRepresentation(), tag: tag)
+        let newDrawing = Drawing(data: blankDrawing.dataRepresentation(), tag: asset.assetTag, dateCreated: Date())
 
         if let bgColour {
             newDrawing.setBgColour(bgColour)
@@ -93,16 +94,20 @@ import PencilKit
         try modelContext.save()
 
         drawings.append(newDrawing)
-        editingState = .editing(newDrawing)
+        editingState[asset] = .editing(newDrawing)
     }
 
-    func deleteDrawing(_ drawing: Drawing) throws {
+    func clearDrawingForAsset(_ asset: Asset) throws {
+        guard case let .editing(drawing) = editingState[asset] else {
+            return
+        }
+
         modelContext.delete(drawing)
         try modelContext.save()
 
         drawings = drawings.filter { $0.id != drawing.id }
 
-        editingState = .idle
+        editingState[asset] = .idle
     }
 
     func deleteAllDrawings() throws {
@@ -112,8 +117,6 @@ import PencilKit
         try modelContext.save()
 
         drawings = []
-
-        editingState = .idle
     }
 }
 
@@ -129,7 +132,7 @@ extension DataManager {
         return try modelContext.fetch(descriptor).map { $0.asset }
     }
 
-    private func fetchAssetData() throws -> [Asset] {
+    private func fetchAssetData() throws {
         guard let url = Bundle.main.url(forResource: "Data", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
             throw Error.failedToFetchDataFromUrl
@@ -142,7 +145,7 @@ extension DataManager {
         do {
             let data = try JSONDecoder().decode(ArtworkData.self, from: data)
             let assets = data.artworks.map { $0.asset }
-            return assets + customAssets
+            self.assets = assets + customAssets
         } catch {
             print(error)
             throw Error.failedToDecodeArtworkJSON

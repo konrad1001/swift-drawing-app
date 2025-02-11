@@ -78,7 +78,6 @@ struct Asset: Hashable, Identifiable {
         let output = Array(mutHead.map { $0.key })
 
         assert(output.count == n, "Output is too short")
-
         return output
     }
 }

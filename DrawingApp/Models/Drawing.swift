@@ -14,17 +14,20 @@ class Drawing {
     var id: UUID
     var data: Data?
     var tag: String
+    var dateCreated: Date
 
     private var bgColourHex: String
 
     init(id: UUID = UUID(),
          data: Data? = nil,
          bgColourHex: String = "#ffffff",
-         tag: String) {
+         tag: String,
+         dateCreated: Date) {
         self.id = id
         self.data = data
         self.bgColourHex = bgColourHex
         self.tag = tag
+        self.dateCreated = dateCreated
     }
 
     func getBgColour() -> UIColor {

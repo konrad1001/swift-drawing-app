@@ -52,21 +52,31 @@ struct ContentView: View {
                     .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
                     .overlay(alignment: .bottom) {
                         HStack(spacing: 16) {
-                            Button("Historic") {
-                                withAnimation {
-                                    scrollFocusId = dataManager.firstHistoric?.id
-                                    scrollViewProxy.scrollTo(dataManager.firstHistoric?.id)
+                            HStack {
+                                Button("Historic") {
+                                    withAnimation {
+                                        scrollFocusId = dataManager.firstHistoric?.id
+                                        scrollViewProxy.scrollTo(dataManager.firstHistoric?.id)
+                                    }
                                 }
-                            }
-                            .foregroundStyle(focusingHistoricAssets ? .white : .gray)
+                                .foregroundStyle(focusingHistoricAssets ? .white : .gray)
 
-                            Button("Custom") {
-                                withAnimation {
-                                    scrollFocusId = dataManager.firstCustom?.id
-                                    scrollViewProxy.scrollTo(dataManager.firstCustom?.id)
+                                Text("•")
+
+                                Button("Custom") {
+                                    withAnimation {
+                                        scrollFocusId = dataManager.firstCustom?.id
+                                        scrollViewProxy.scrollTo(dataManager.firstCustom?.id)
+                                    }
                                 }
+                                .foregroundStyle(!focusingHistoricAssets ? .white : .gray)
                             }
-                            .foregroundStyle(!focusingHistoricAssets ? .white : .gray)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 16)
+                            .background {
+                                RoundedRectangle(cornerRadius: 32.0)
+                                    .fill(.black.opacity(0.4))
+                            }
 
 
                             Spacer()
@@ -77,7 +87,8 @@ struct ContentView: View {
                             .foregroundStyle(navigationManager.isUploadedPresented ? .white : .gray)
                         }
                         .foregroundStyle(.gray)
-                        .padding(.horizontal, 64)
+                        .padding(.horizontal, 48)
+                        .padding(.bottom, 16)
                     }
                 }
             }
