@@ -45,9 +45,7 @@ struct UICanvasView: UIViewRepresentable {
         canvas.drawing = drawing
 
         canvas.backgroundColor = UIColor(canvasManager.bgColour)
-
         canvas.drawingPolicy = .anyInput
-
         canvas.isOpaque = false
 
         canvas.tool = canvasManager.isDrawing ? ink : eraser

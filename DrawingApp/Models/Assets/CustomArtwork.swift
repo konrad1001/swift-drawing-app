@@ -31,6 +31,7 @@ extension CustomArtwork {
 
         return formatter.string(from: self.dateCreated)
     }
+    
     var asset: Asset {
         .init(
             typeContent: .custom(imageData: imageData),

@@ -63,7 +63,6 @@ struct UploadView: View {
             Text("Title")
                 .font(.headline)
 
-
             TextField("Title", text: $title)
                 .padding()
                 .background {
@@ -73,8 +72,6 @@ struct UploadView: View {
                 }
                 .padding(.bottom, 64)
 
-
-
             HStack {
                 Spacer()
                 Text("Choose your own photo to use as a reference")
@@ -82,7 +79,6 @@ struct UploadView: View {
                     .multilineTextAlignment(.center)
                 Spacer()
             }
-
 
             Spacer()
 

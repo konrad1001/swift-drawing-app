@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+struct ArtworkData: Codable {
+    let artworks: [Artwork]
+}
+
 struct Artwork: Codable {
     let tag: String
     let title: String
@@ -47,8 +51,5 @@ extension Artwork {
         )
 }
 
-struct ArtworkData: Codable {
-    let artworks: [Artwork]
-}
 
 

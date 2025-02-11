@@ -10,15 +10,10 @@ import SwiftUI
 struct SliderView: View {
     @Environment(CanvasManager.self) var canvasManager
 
-    func calculateThumbOffset(proxy: GeometryProxy) -> CGFloat {
-        return (proxy.size.width - proxy.size.height) * canvasManager.widthSlider
-    }
-
     var body: some View {
         @Bindable var canvasManager = canvasManager
 
         Slider(value: $canvasManager.widthSlider)
-            .opacity(1.0)
             .tint(.clear)
             .background(
                 GeometryReader { proxy in

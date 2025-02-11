@@ -48,7 +48,6 @@ struct ZoomableImage: View {
                             .onEnded({ _ in
                                 canvasManager.lastOffset = offset
                             })
-
                     )
         )
     }

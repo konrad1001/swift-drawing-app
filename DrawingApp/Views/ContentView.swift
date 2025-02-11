@@ -78,7 +78,6 @@ struct ContentView: View {
                                     .fill(.black.opacity(0.4))
                             }
 
-
                             Spacer()
 
                             Button("Upload") {

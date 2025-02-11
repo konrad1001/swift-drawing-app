@@ -4,6 +4,7 @@
 //
 //  Created by Konrad Painta on 2/6/25.
 //
+// https://ditto.live/blog/swift-hex-color-extension
 
 import UIKit
 
@@ -51,14 +52,12 @@ extension UIColor {
                 return "#000000"
             }
 
-            // Clamp components to [0.0, 1.0]
             red = max(0, min(1, red))
             green = max(0, min(1, green))
             blue = max(0, min(1, blue))
             alpha = max(0, min(1, alpha))
 
             if alpha == 1 {
-                // RGB
                 return String(
                     format: "#%02lX%02lX%02lX",
                     Int(round(red * 255)),
@@ -66,7 +65,6 @@ extension UIColor {
                     Int(round(blue * 255))
                 )
             } else {
-                // RGBA
                 return String(
                     format: "#%02lX%02lX%02lX%02lX",
                     Int(round(red * 255)),
