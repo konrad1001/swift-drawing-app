@@ -68,15 +68,18 @@ struct FullScreenView: View {
                         Image(systemName: "info.circle")
                     }
                     .foregroundStyle(.gray)
+                    .shadow(radius: 2)
                     .padding(.bottom, 32)
 
                     HStack {
-                        ForEach(0..<6) { index in
-                            Rectangle()
-                                .fill(colours.count == 7 ? colours[index] : .black)
-                                .opacity(isLoading ? 0 : 1)
-                                .frame(width: 24, height: 24)
-                                .transition(.opacity)
+                        Group {
+                            ForEach(0..<6) { index in
+                                Rectangle()
+                                    .fill(colours.count == 7 ? colours[index] : .black)
+                                    .opacity(isLoading ? 0.4 : 1)
+                                    .frame(width: 24, height: 24)
+                                    .transition(.opacity)
+                            }
                         }
                         .animation(.default, value: colours)
 

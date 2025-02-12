@@ -16,7 +16,8 @@ struct UploadView: View {
     @State private var pickerItem: PhotosPickerItem?
     @State private var selectedImage: Image?
 
-    @State private var title: String = "Untitled"
+    @State private var title: String = ""
+    @State private var isProgressing: Bool = false
 
     var isProgressable: Bool {
         return title.count > 0 && selectedImage != nil
@@ -38,25 +39,24 @@ struct UploadView: View {
                 }
             }
 
-            Group {
-                if let image = selectedImage {
-                    image
-                        .resizable()
-                        .scaledToFit()
-                } else {
-                    PhotosPicker(selection: $pickerItem, matching: .images) {
-                        RoundedRectangle(cornerRadius: 16.0)
-                            .fill(.black)
-                            .opacity(0.4)
-                            .overlay {
-                                VStack {
-                                    Image(systemName: "plus")
-                                    Text("Add")
-                                }
-                            }
+            PhotosPicker(selection: $pickerItem, matching: .images) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16.0)
+                        .fill(.black)
+                        .opacity(0.4)
+                    VStack {
+                        Image(systemName: "plus")
+                        Text("Add")
                     }
+
+                    if let image = selectedImage {
+                            image
+                                .resizable()
+                                .scaledToFit()
+                        }
                 }
             }
+
             .frame(height: 300)
             .padding(.bottom, 64)
 
@@ -86,6 +86,7 @@ struct UploadView: View {
                 Spacer()
 
                 Button {
+                    isProgressing = true
                     Task {
                         try await createCustomAsset()
                     }
@@ -95,6 +96,7 @@ struct UploadView: View {
                         .padding()
                         .foregroundStyle(isProgressable ? .white : .gray)
                 }
+                .disabled(!isProgressable || isProgressing)
             }
             .padding(.vertical)
         }
@@ -102,6 +104,9 @@ struct UploadView: View {
             Task {
                 selectedImage = try await pickerItem?.loadTransferable(type: Image.self)
             }
+        }
+        .onAppear {
+            title = "Untitled #\(dataManager.customAssetCount+1)"
         }
         .padding()
         .foregroundStyle(.white)
@@ -129,9 +134,11 @@ struct UploadView: View {
             try dataManager.createCustomArtwork(newCustom)
 
             let colours = await newCustom.asset.fetchPopulousColours()
+            let asset = newCustom.asset
 
+            navigationManager.scrollFocusID = asset.id
             navigationManager.isUploadedPresented = false
-            navigationManager.navigateOnto(page: .editor(asset: newCustom.asset, colours: colours))
+            navigationManager.navigateOnto(page: .editor(asset: asset, colours: colours))
         }
     }
 }

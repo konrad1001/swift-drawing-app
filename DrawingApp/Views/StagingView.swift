@@ -182,8 +182,6 @@ struct ButtonPanelView: View {
                 }
 
                 showDeletionAlert = true
-
-//                try? dataManager.deleteDrawing(drawing)
             }
         }
         .foregroundStyle(isEnabled ? .white : .gray)

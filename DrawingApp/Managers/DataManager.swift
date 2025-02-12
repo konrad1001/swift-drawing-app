@@ -23,7 +23,7 @@ import PencilKit
         case failedToLoadCustomArtworksFromData
     }
 
-    let modelContext: ModelContext
+    private let modelContext: ModelContext
 
     // State
     var editingState: [Asset: EditingState] = [:]
@@ -36,8 +36,11 @@ import PencilKit
     }
 
     // Stores
-    var drawings = [Drawing]()
-    var assets = [Asset]()
+    private(set) var drawings = [Drawing]()
+    private(set) var assets = [Asset]()
+
+    // Meta
+    private(set) var customAssetCount = 0
 
     init?(modelContext: ModelContext) {
         self.modelContext = modelContext
@@ -61,6 +64,7 @@ import PencilKit
         try modelContext.save()
 
         assets.append(artwork.asset)
+        customAssetCount += 1
     }
 
     func deleteCustomArtwork(forId id: UUID) throws {
@@ -70,6 +74,7 @@ import PencilKit
 
         assets = assets.filter { $0.id != id }
         editingState = editingState.filter { $0.key.id != id }
+        customAssetCount = max(0, customAssetCount-1)
     }
 
     // MARK: - Drawings
@@ -129,7 +134,11 @@ extension DataManager {
 
     private func fetchCustomAssets() throws -> [Asset] {
         let descriptor = FetchDescriptor<CustomArtwork>()
-        return try modelContext.fetch(descriptor).map { $0.asset }
+        let assets = try modelContext.fetch(descriptor).map { $0.asset }
+
+        customAssetCount = assets.count
+
+        return assets
     }
 
     private func fetchAssetData() throws {

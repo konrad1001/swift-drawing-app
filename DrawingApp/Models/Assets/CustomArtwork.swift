@@ -37,7 +37,7 @@ extension CustomArtwork {
             typeContent: .custom(imageData: imageData),
             id: id,
             title: title,
-            description: "",
+            description: "Custom Muse",
             tooltip: "Created on \(shortDate)",
             assetTag: dateCreated.ISO8601Format() + title
         )

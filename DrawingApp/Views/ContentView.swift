@@ -12,13 +12,11 @@ struct ContentView: View {
     @Environment(NavigationManager.self) var navigationManager
     @Environment(DataManager.self) var dataManager
 
-    @State var scrollFocusId: UUID?
-
     var focusingHistoricAssets: Bool {
-        if scrollFocusId == nil { return true }
+        if navigationManager.scrollFocusID == nil { return true }
 
         let focusedAsset = dataManager.assets.first { asset in
-            asset.id == scrollFocusId
+            asset.id == navigationManager.scrollFocusID
         }
 
         if case .historic = focusedAsset?.typeContent {
@@ -27,6 +25,12 @@ struct ContentView: View {
         return false
     }
 
+    var userHasCustomAssets: Bool {
+        dataManager.customAssetCount > 0
+    }
+
+    let noCustomAssetsDisclaimerID = UUID()
+
     var body: some View {
         @Bindable var navigationManager = navigationManager
 
@@ -34,28 +38,62 @@ struct ContentView: View {
             GeometryReader { geometryProxy in
                 ScrollViewReader { scrollViewProxy in
                     ScrollView {
-                        LazyVStack {
+                        // LazyVStack won't load some images and pallates on iOS 17
+                        VStack {
                             ForEach(dataManager.assets) { asset in
-                                FullScreenView(asset: asset, proxy: geometryProxy)
-                                    .scrollTransition { content, phase in
-                                        content
-                                            .opacity(phase.isIdentity ? 1 : 0)
-                                            .blur(radius: phase.isIdentity ? 0 : 10)
-                                    }
-                                    .id(asset.id)
+                                ZStack {
+                                    FullScreenView(asset: asset, proxy: geometryProxy)
+                                        .scrollTransition { content, phase in
+                                            content
+                                                .opacity(phase.isIdentity ? 1 : 0)
+                                                .blur(radius: phase.isIdentity ? 0 : 10)
+                                        }
+                                        .id(asset.id)
+                                }
+                            }
+
+                            if !userHasCustomAssets {
+                                VStack(spacing: 8) {
+                                    Spacer()
+                                    Image(systemName: "clock")
+                                        .foregroundStyle(.white)
+
+                                    Text("You've not uploaded any custom Muses to copy from.")
+                                        .foregroundStyle(.white)
+                                        .padding(.bottom, 32)
+
+                                    Text("Tap on the upload button to get started.")
+                                        .foregroundStyle(.gray)
+                                        .shadow(radius: 2)
+
+                                    Spacer()
+                                }
+                                .id(noCustomAssetsDisclaimerID)
+                                .font(.title3)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 48)
+                                .background(
+                                    Image("artist_studio")
+                                        .resizable()
+                                        .saturation(0.6)
+                                        .scaledToFill()
+                                        .blur(radius: 20)
+                                        .opacity(0.6)
+                                )
+                                .frame(minHeight: geometryProxy.size.height + 40)
                             }
                         }
                         .scrollTargetLayout()
                     }
                     .animation(.default, value: dataManager.assets)
-                    .scrollPosition(id: $scrollFocusId)
+                    .scrollPosition(id: $navigationManager.scrollFocusID)
                     .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
                     .overlay(alignment: .bottom) {
                         HStack(spacing: 16) {
                             HStack {
                                 Button("Historic") {
                                     withAnimation {
-                                        scrollFocusId = dataManager.firstHistoric?.id
+                                        navigationManager.scrollFocusID = dataManager.firstHistoric?.id
                                         scrollViewProxy.scrollTo(dataManager.firstHistoric?.id)
                                     }
                                 }
@@ -65,8 +103,13 @@ struct ContentView: View {
 
                                 Button("Custom") {
                                     withAnimation {
-                                        scrollFocusId = dataManager.firstCustom?.id
-                                        scrollViewProxy.scrollTo(dataManager.firstCustom?.id)
+                                        if userHasCustomAssets {
+                                            navigationManager.scrollFocusID = dataManager.firstCustom?.id
+                                            scrollViewProxy.scrollTo(dataManager.firstCustom?.id)
+                                        } else {
+                                            navigationManager.scrollFocusID = noCustomAssetsDisclaimerID
+                                            scrollViewProxy.scrollTo(noCustomAssetsDisclaimerID)
+                                        }
                                     }
                                 }
                                 .foregroundStyle(!focusingHistoricAssets ? .white : .gray)
