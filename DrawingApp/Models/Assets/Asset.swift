@@ -44,7 +44,7 @@ struct Asset: Hashable, Identifiable {
     }
 
     // Fetch N most populous colours
-    func fetchPopulousColours(_ n: Int = 7, step: Int = 2) async -> [Color] {
+    func fetchPopulousColours(_ n: Int = 7, step: Int = 4) async -> [Color] {
         var colourMap = [Color: Int]()
         var uiImage: UIImage?
 
@@ -59,13 +59,18 @@ struct Asset: Hashable, Identifiable {
             return Array(repeating: Color.black, count: n)
         }
 
+//        var count = 0
+
         for x in stride(from: 1, to: Int(uiImage.size.width), by: step) {
             for y in stride(from: 1, to: Int(uiImage.size.height), by: step) {
+//                count += 1
                 if let pixelColor = pixelReader.colorAt(x: x, y: y) {
                     colourMap[pixelColor] = (colourMap[pixelColor] ?? 0) + 1
                 }
             }
         }
+
+//        print("checked \(count) pixels")
 
         let sortedColours = colourMap.sorted(by: { $0.value < $1.value })
         let head = sortedColours.prefix(n)

@@ -26,7 +26,7 @@ struct DrawingAppApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .preferredColorScheme(.light)
+//                .preferredColorScheme(.light)
         }
         .environment(NavigationManager())
         .environment(CanvasManager())

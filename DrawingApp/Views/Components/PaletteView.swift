@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct PalatteView: View {
+struct PaletteView: View {
     @Environment(CanvasManager.self) var canvasManager
     @Environment(DataManager.self) var dataManager
 
@@ -44,12 +44,19 @@ struct PalatteView: View {
                     try? dataManager.createNewDrawing(forAsset: asset, withBackgroundColour: UIColor(randomBgColour))
                     canvasManager.bgColour =  randomBgColour
                 }
-                iconButton(systemName: "pencil") {
-                    canvasManager.isDrawing = true
-                    canvasManager.pencilType = .pencil
+
+                Spacer()
+
+                VStack(spacing: 24) {
+                    Image(systemName: "paintbrush.pointed")
+                    Image(systemName: "photo.artframe")
                 }
+                .padding(.bottom, 24)
+                .offset(x: -10)
+                .foregroundStyle(.gray)
             }
         }
+
         .padding(.horizontal)
         .background(
             RoundedRectangle(cornerRadius: 16)

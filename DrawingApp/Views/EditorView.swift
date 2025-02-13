@@ -47,6 +47,7 @@ struct EditorView: View {
                 }
                 .font(.title3)
                 .foregroundStyle(.white)
+                .zIndex(1)
 
                 // Reference
                 HStack(spacing: 0) {
@@ -62,7 +63,7 @@ struct EditorView: View {
 
                     Spacer(minLength: 0)
 
-                    PalatteView(asset: asset, colours: colours)
+                    PaletteView(asset: asset, colours: colours)
                 }
                 .frame(height: geometryProxy.size.height * (1/3))
 

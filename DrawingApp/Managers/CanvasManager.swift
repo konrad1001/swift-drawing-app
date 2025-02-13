@@ -30,13 +30,17 @@ import SwiftUI
     // Metadata
     var canvasSize: CGSize? = nil
 
-    func resetInteractableState() {
+    func resetInteractableState(toggleScaleToFit: Bool = true) {
         currentZoom = 0.0
         totalZoom = 1.0
         offset = .zero
         lastOffset = .zero
 
-        scaledToFit.toggle()
+        if toggleScaleToFit {
+            scaledToFit.toggle()
+        } else {
+            scaledToFit = true
+        }
     }
 }
 

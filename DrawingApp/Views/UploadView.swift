@@ -95,6 +95,15 @@ struct UploadView: View {
                         .font(.system(size: 24))
                         .padding()
                         .foregroundStyle(isProgressable ? .white : .gray)
+                        .background {
+                            Circle()
+                                .fill(.clear)
+                                .stroke(Gradients.defaultGradient, lineWidth: 5)
+                                .blur(radius: isProgressable ? 1 : 10)
+                                .opacity(isProgressable ? 0.8 : 0)
+                                .shadow(radius: 4)
+                        }
+                        .animation(.default, value: isProgressable)
                 }
                 .disabled(!isProgressable || isProgressing)
             }

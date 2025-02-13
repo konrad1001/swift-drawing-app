@@ -19,7 +19,7 @@ struct ContentView: View {
             asset.id == navigationManager.scrollFocusID
         }
 
-        if case .historic = focusedAsset?.typeContent {
+        if case .historic = focusedAsset?.typeContent { 
             return true
         }
         return false
@@ -30,6 +30,7 @@ struct ContentView: View {
     }
 
     let noCustomAssetsDisclaimerID = UUID()
+    let homepageID = UUID()
 
     var body: some View {
         @Bindable var navigationManager = navigationManager
@@ -38,8 +39,19 @@ struct ContentView: View {
             GeometryReader { geometryProxy in
                 ScrollViewReader { scrollViewProxy in
                     ScrollView {
-                        // LazyVStack won't load some images and pallates on iOS 17
+                        // LazyVStack won't load some images and palettes on iOS 17
                         VStack {
+                            if navigationManager.homePageIsActive {
+                                HomeView(proxy: geometryProxy)
+                                    .scrollTransition { content, phase in
+                                        content
+                                            .opacity(phase.isIdentity ? 1 : 0)
+                                            .blur(radius: phase.isIdentity ? 0 : 20)
+                                            .scaleEffect(phase.isIdentity ? 1 : 0.8)
+                                    }
+                                    .id(homepageID)
+                            }
+
                             ForEach(dataManager.assets) { asset in
                                 ZStack {
                                     FullScreenView(asset: asset, proxy: geometryProxy)
@@ -85,9 +97,12 @@ struct ContentView: View {
                         }
                         .scrollTargetLayout()
                     }
+
                     .animation(.default, value: dataManager.assets)
+                    .scrollDisabled(navigationManager.homePageIsActive)
                     .scrollPosition(id: $navigationManager.scrollFocusID)
                     .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
+                    .sensoryFeedback(.success, trigger: navigationManager.homePageIsActive)
                     .overlay(alignment: .bottom) {
                         HStack(spacing: 16) {
                             HStack {
@@ -119,6 +134,7 @@ struct ContentView: View {
                             .background {
                                 RoundedRectangle(cornerRadius: 32.0)
                                     .fill(.black.opacity(0.4))
+                                    .blur(radius: 0.2)
                             }
 
                             Spacer()
@@ -129,8 +145,10 @@ struct ContentView: View {
                             .foregroundStyle(navigationManager.isUploadedPresented ? .white : .gray)
                         }
                         .foregroundStyle(.gray)
+                        .opacity(navigationManager.homePageIsActive ? 0 : 1)
                         .padding(.horizontal, 48)
                         .padding(.bottom, 16)
+                        .animation(.default, value: navigationManager.homePageIsActive)
                     }
                 }
             }
@@ -160,6 +178,7 @@ struct ContentView: View {
         return ContentView()
             .modelContainer(container)
             .environment(DataManager(modelContext: container.mainContext))
+            .environment(CanvasManager())
             .environment(NavigationManager())
 
     } catch {

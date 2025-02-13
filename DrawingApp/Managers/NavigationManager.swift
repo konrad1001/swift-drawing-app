@@ -12,7 +12,9 @@ import SwiftUI
     var path = NavigationPath()
     var isUploadedPresented: Bool = false
 
-    var scrollFocusID: UUID? 
+    var homePageIsActive: Bool = true
+
+    var scrollFocusID: UUID?
 
     func navigateOnto(page: Page) {
         path.append(page)

@@ -90,8 +90,8 @@ struct StagingView: View {
                                         imageView(for: drawing)
                                             .clipShape(RoundedRectangle(cornerRadius: 16))
                                             .overlay(
-                                                RoundedRectangle(cornerRadius: 20)
-                                                    .stroke(.blue, lineWidth: selectedDrawing == drawing ? 5 : 0)
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .stroke(Gradients.defaultGradient, lineWidth: selectedDrawing == drawing ? 5 : 0)
                                             )
                                             .onTapGesture {
                                                 dataManager.selectDrawing(drawing, forAsset: asset)
@@ -132,8 +132,7 @@ struct StagingView: View {
                 .resizable()
                 .scaledToFill()
         } else {
-            Text("Empty")
-                .foregroundStyle(.white)
+            EmptyView()
         }
     }
 }

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct FullScreenView: View {
     @Environment(NavigationManager.self) var navigationManager
+    @Environment(CanvasManager.self) var canvasManager
     @Environment(DataManager.self) var dataManager
 
     let asset: Asset
@@ -30,6 +31,7 @@ struct FullScreenView: View {
                     .shadow(radius: 4)
                     .onTapGesture {
                         navigationManager.navigateOnto(page: .editor(asset: asset, colours: colours))
+                        canvasManager.resetInteractableState(toggleScaleToFit: false)
                     }
                     .opacity(isLoading ? 0.7 : 1)
                     .disabled(isLoading)
@@ -84,18 +86,10 @@ struct FullScreenView: View {
                         .animation(.default, value: colours)
 
                         Spacer()
-                        Button {
+                        buttonView {
                             navigationManager.navigateOnto(page: .editor(asset: asset, colours: colours))
-                        } label: {
-                            HStack {
-                                Image(systemName: "paintbrush")
-                                    .font(.system(size: 24))
-                                    .padding()
-                                    .foregroundStyle(isLoading ? .gray : .white)
-                            }
+                            canvasManager.resetInteractableState(toggleScaleToFit: false)
                         }
-                        .opacity(isLoading ? 0.3 : 1)
-                        .disabled(isLoading)
                     }
                     .padding(.trailing)
                 }
@@ -112,7 +106,7 @@ struct FullScreenView: View {
                     .blur(radius: 20)
                     .opacity(0.6)
             )
-            .frame(minHeight: proxy.size.height + 40)
+            .frame(minHeight: proxy.size.height)
         }
         .onAppear {
             Task {
@@ -121,5 +115,28 @@ struct FullScreenView: View {
                 isLoading = false
             }
         }
+    }
+
+    func buttonView(_ action: @escaping () -> Void) -> some View {
+        Button {
+            action()
+        } label: {
+            Image(systemName: "paintbrush")
+                .font(.system(size: 24))
+                .padding()
+                .foregroundStyle(isLoading ? .gray : .white)
+        }
+        .background {
+            Circle()
+                .fill(.clear)
+                .stroke(Gradients.defaultGradient, lineWidth: 5)
+//                .foregroundStyle(Gradients.defaultGradient)
+                .blur(radius: isLoading ? 10 : 1)
+                .opacity(isLoading ? 0 : 0.8)
+                .shadow(radius: 4)
+        }
+        .opacity(isLoading ? 0.3 : 1)
+        .disabled(isLoading)
+        .animation(.default, value: isLoading)
     }
 }

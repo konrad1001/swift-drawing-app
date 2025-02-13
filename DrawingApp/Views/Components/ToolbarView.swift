@@ -86,13 +86,19 @@ extension ToolbarView {
                 .padding(12)
                 .foregroundStyle(.white)
                 .background(
-                    Circle().fill(.blue)
-                        .opacity(isSelected ? 1.0 : 0)
+                    Circle()
+                        .fill(.clear)
+                        .stroke(Gradients.defaultGradient, lineWidth: 5)
+                        .blur(radius: isSelected ? 1 : 10)
+                        .opacity(isSelected ? 0.8 : 0)
                 )
+                .animation(.default, value: isSelected)
         }
+
 
     }
 
+    // Without selection backgrounds
     func iconButton(systemName: String, bold: Bool = true, _ action: @escaping () -> Void) -> some View {
         Button(action: action)  {
             Image(systemName: systemName)
