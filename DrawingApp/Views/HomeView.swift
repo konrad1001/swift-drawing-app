@@ -10,10 +10,9 @@ import SwiftUI
 struct HomeView: View {
     @Environment(NavigationManager.self) var navigationManager
 
-    @State var isCollapsed: Bool = false
+    @State private var isCollapsed: Bool = false
 
     let proxy: GeometryProxy
-
 
     var body: some View {
         VStack(alignment: .leading, spacing: 64) {
@@ -26,27 +25,28 @@ struct HomeView: View {
             }
             .font(.largeTitle)
             .shadow(radius: 2)
-
-
+            
             VStack(alignment: .leading, spacing: 16) {
                 Text("Muse is an iPhone app designed to get everybody into painting.")
                 Text("Choose an existing Muse to copy from, or upload your own.")
             }
+            .padding(.bottom, 132)
 
             HStack {
                 Spacer()
-                Button("Get started") {
+                Button("Tap to get started") {
                     withAnimation(.spring(duration: 0.8)) {
                         navigationManager.homePageIsActive = false
                         isCollapsed = true
                     }
                 }
-
-                    .fontWeight(.bold)
+                .fontWeight(.bold)
+                .foregroundStyle(.gray)
+                Spacer()
             }
             .padding()
 
-            Spacer()
+            Spacer().frame(height: 50)
         }
         .padding(.horizontal, 48)
         .foregroundStyle(.white)
@@ -66,6 +66,7 @@ struct HomeView: View {
 #Preview {
     GeometryReader { geo in
         HomeView(proxy: geo)
+            .environment(NavigationManager())
     }
 }
 

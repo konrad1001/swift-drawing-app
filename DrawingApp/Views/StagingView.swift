@@ -47,16 +47,16 @@ struct StagingView: View {
                 .foregroundStyle(.white)
 
                 // Focused drawing
-                Group {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16.0)
+                        .fill(.black.opacity(0.4))
                     if case let .editing(drawing) = dataManager.editingState[asset], drawing.tag == asset.assetTag {
                         imageView(for: drawing)
-                    } else {
-                        RoundedRectangle(cornerRadius: 16.0)
-                            .fill(.black.opacity(0.4))
                     }
                 }
                 .padding(.horizontal, 32)
                 .frame(height: proxy.size.height * (1/4))
+                .clipShape(RoundedRectangle(cornerRadius: 16.0))
 
                 // Buttons
                 ButtonPanelView(asset: asset)
@@ -65,7 +65,10 @@ struct StagingView: View {
 
                 // Drawing history
                 VStack(alignment: .leading) {
-                    Text("History")
+                    HStack {
+                        Text("History")
+                        Spacer()
+                    }
                         .font(.headline)
                         .foregroundStyle(.white)
 
@@ -131,6 +134,7 @@ struct StagingView: View {
             Image(uiImage: image)
                 .resizable()
                 .scaledToFill()
+                .clipped()
         } else {
             EmptyView()
         }
@@ -160,18 +164,12 @@ struct ButtonPanelView: View {
                     return
                 }
                 let imageSaver = ImageSaver {
-
+                    Task {
+                        userDidSave = true
+                        try await Task.sleep(nanoseconds: 1_500_000_000)
+                        userDidSave = false
+                    }
                 }
-
-                userDidSave.toggle()
-                print(userDidSave)
-
-                withAnimation(.default.delay(1.0)) {
-                    userDidSave.toggle()
-                    print(userDidSave)
-
-                }
-
                 imageSaver.saveToCameraRoll(image: image)
             }
 
@@ -183,6 +181,7 @@ struct ButtonPanelView: View {
                 showDeletionAlert = true
             }
         }
+        .animation(.default, value: userDidSave)
         .foregroundStyle(isEnabled ? .white : .gray)
         .alert("Careful!", isPresented: $showDeletionAlert) {
             Button("Cancel", role: .cancel) {}
