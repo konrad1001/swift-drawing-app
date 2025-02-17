@@ -18,6 +18,7 @@ struct FullScreenView: View {
     @State var colours: [Color] = []
 
     @State var isLoading = true
+    @State var showDeletionAlert = false
 
     var body: some View {
         Group {
@@ -39,7 +40,7 @@ struct FullScreenView: View {
                     .overlay(alignment: .topTrailing) {
                         if case .custom = asset.typeContent {
                             Button {
-                                try? dataManager.deleteCustomArtwork(forId: asset.id)
+                                showDeletionAlert = true
                             } label: {
                                 Image(systemName: "trash")
                                     .font(.system(size: 20))
@@ -62,7 +63,7 @@ struct FullScreenView: View {
                     }
 
                     Text(asset.description)
-                        .padding(.bottom, 32)
+                        .padding(.bottom, 16)
 
                     Label {
                         Text(asset.tooltip)
@@ -115,6 +116,14 @@ struct FullScreenView: View {
                 isLoading = false
             }
         }
+        .alert("Careful!", isPresented: $showDeletionAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Okay") {
+                try? dataManager.deleteCustomAsset(asset: asset)
+            }
+        } message: {
+            Text("Are you sure you want to delete this Muse? All unsaved artworks of this Muse will be lost!")
+        }
     }
 
     func buttonView(_ action: @escaping () -> Void) -> some View {
@@ -130,7 +139,6 @@ struct FullScreenView: View {
             Circle()
                 .fill(.clear)
                 .stroke(Gradients.defaultGradient, lineWidth: 5)
-//                .foregroundStyle(Gradients.defaultGradient)
                 .blur(radius: isLoading ? 10 : 1)
                 .opacity(isLoading ? 0 : 0.8)
                 .shadow(radius: 4)

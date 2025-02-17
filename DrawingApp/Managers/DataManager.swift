@@ -59,7 +59,7 @@ import PencilKit
     }
 
     // MARK: - Assets
-    func createCustomArtwork(_ artwork: CustomArtwork) throws {
+    func createCustomAsset(_ artwork: CustomArtwork) throws {
         modelContext.insert(artwork)
         try modelContext.save()
 
@@ -67,13 +67,16 @@ import PencilKit
         customAssetCount += 1
     }
 
-    func deleteCustomArtwork(forId id: UUID) throws {
+    func deleteCustomAsset(asset: Asset) throws {
+        let id = asset.id
         try modelContext.delete(model: CustomArtwork.self, where: #Predicate { artwork in
             artwork.id == id
         })
 
-        assets = assets.filter { $0.id != id }
-        editingState = editingState.filter { $0.key.id != id }
+        try deleteAllDrawingsForDeletedAsset(asset: asset)
+
+        assets = assets.filter { $0.id != asset.id }
+        editingState = editingState.filter { $0.key.id != asset.id }
         customAssetCount = max(0, customAssetCount-1)
     }
 
@@ -122,6 +125,18 @@ import PencilKit
         try modelContext.save()
 
         drawings = []
+    }
+
+    private func deleteAllDrawingsForDeletedAsset(asset: Asset) throws {
+        drawings = drawings.compactMap({ drawing in
+            if drawing.tag == asset.assetTag {
+                modelContext.delete(drawing)
+                return nil
+            }
+            return drawing
+        })
+
+        try modelContext.save()
     }
 }
 
