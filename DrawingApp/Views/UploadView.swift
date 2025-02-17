@@ -11,6 +11,7 @@ import SwiftUI
 
 struct UploadView: View {
     @Environment(NavigationManager.self) var navigationManager
+    @Environment(CanvasManager.self) var canvasManager
     @Environment(DataManager.self) var dataManager
 
     @State private var pickerItem: PhotosPickerItem?
@@ -18,6 +19,7 @@ struct UploadView: View {
 
     @State private var title: String = ""
     @State private var isProgressing: Bool = false
+    @State private var isLoading: Bool = false
 
     var isProgressable: Bool {
         return title.count > 0 && selectedImage != nil
@@ -26,7 +28,7 @@ struct UploadView: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
-                Text("Custom")
+                Text("Custom Muse")
                     .font(.title)
 
                 Spacer()
@@ -50,13 +52,12 @@ struct UploadView: View {
                     }
 
                     if let image = selectedImage {
-                            image
-                                .resizable()
-                                .scaledToFit()
-                        }
+                        image
+                            .resizable()
+                            .scaledToFit()
+                    }
                 }
             }
-
             .frame(height: 300)
             .padding(.bottom, 64)
 
@@ -74,7 +75,7 @@ struct UploadView: View {
 
             HStack {
                 Spacer()
-                Text("Choose your own photo to use as a reference")
+                Text("Choose your own photo to use as a Muse")
                     .padding(.horizontal, 48)
                     .multilineTextAlignment(.center)
                 Spacer()
@@ -87,6 +88,8 @@ struct UploadView: View {
 
                 Button {
                     isProgressing = true
+                    isLoading = true
+                    canvasManager.resetInteractableState(toggleScaleToFit: false)
                     Task {
                         try await createCustomAsset()
                     }
@@ -94,16 +97,22 @@ struct UploadView: View {
                     Image(systemName: "paintbrush")
                         .font(.system(size: 24))
                         .padding()
-                        .foregroundStyle(isProgressable ? .white : .gray)
+                        .foregroundStyle((isProgressable && !isProgressing) ? .white : .gray)
                         .background {
                             Circle()
                                 .fill(.clear)
                                 .stroke(Gradients.defaultGradient, lineWidth: 5)
                                 .blur(radius: isProgressable ? 1 : 10)
                                 .opacity(isProgressable ? 0.8 : 0)
+                                .opacity(isLoading ? 0.2 : 1)
+                                .animation(
+                                    Animation.easeInOut(duration: 1)
+                                    .repeatForever(autoreverses: true), value: isLoading
+                                  )
                                 .shadow(radius: 4)
                         }
                         .animation(.default, value: isProgressable)
+                        .animation(.default, value: isProgressing)
                 }
                 .disabled(!isProgressable || isProgressing)
             }
@@ -140,7 +149,7 @@ struct UploadView: View {
         let newCustom = CustomArtwork(imageData: imageData, title: title, dateCreated: Date())
 
         do {
-            try dataManager.createCustomArtwork(newCustom)
+            try dataManager.createCustomAsset(newCustom)
 
             let colours = await newCustom.asset.fetchPopulousColours()
             let asset = newCustom.asset
@@ -160,6 +169,7 @@ struct UploadView: View {
         return UploadView()
             .modelContainer(container)
             .environment(DataManager(modelContext: container.mainContext))
+            .environment(CanvasManager())
             .environment(NavigationManager())
 
     } catch {

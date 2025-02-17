@@ -10,6 +10,8 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(NavigationManager.self) var navigationManager
+    @Environment(CanvasManager.self) var canvasManager
+
     @Environment(DataManager.self) var dataManager
 
     var focusingHistoricAssets: Bool {
@@ -146,9 +148,9 @@ struct ContentView: View {
                         }
                         .foregroundStyle(.gray)
                         .opacity(navigationManager.homePageIsActive ? 0 : 1)
+                        .animation(.easeIn(duration: 1.0).delay(1.0), value: navigationManager.homePageIsActive)
                         .padding(.horizontal, 48)
                         .padding(.bottom, 16)
-                        .animation(.default, value: navigationManager.homePageIsActive)
                     }
                 }
             }

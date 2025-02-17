@@ -58,7 +58,6 @@ struct EditorView: View {
                     }
                     .frame(height: geometryProxy.size.height * (1/3))
                     .frame(width: geometryProxy.size.width * (3/5))
-
                     .clipShape(RoundedRectangle(cornerRadius: 16))
 
                     Spacer(minLength: 0)
