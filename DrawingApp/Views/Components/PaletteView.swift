@@ -27,9 +27,19 @@ struct PaletteView: View {
                 ColorPicker("Brush", selection: $canvasManager.color, supportsOpacity: true)
                     .frame(width: 0)
                     .offset(x: -3)
+                    .overlay(
+                        Image(systemName: "paintbrush.pointed")
+                            .foregroundStyle(.gray)
+                            .offset(x: 35)
+                    )
                 ColorPicker("Canvas", selection: $canvasManager.bgColour, supportsOpacity: false)
                     .frame(width: 0)
-                    .offset(x: -3)  // offset padding from label
+                    .offset(x: -3)
+                    .overlay(
+                        Image(systemName: "photo.artframe")
+                            .foregroundStyle(.gray)
+                            .offset(x: 35)
+                    )
                 Spacer()
             }
             .foregroundStyle(.white)
@@ -46,14 +56,6 @@ struct PaletteView: View {
                 }
 
                 Spacer()
-
-                VStack(spacing: 24) {
-                    Image(systemName: "paintbrush.pointed")
-                    Image(systemName: "photo.artframe")
-                }
-                .padding(.bottom, 24)
-                .offset(x: -10)
-                .foregroundStyle(.gray)
             }
         }
 
