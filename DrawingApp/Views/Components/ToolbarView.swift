@@ -33,6 +33,8 @@ struct ToolbarView: View {
 
     @State var selectedTool: Tool = .pencil
 
+    let proxy: GeometryProxy
+
     var body: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 16) {
@@ -59,6 +61,8 @@ struct ToolbarView: View {
 
                 SliderView()
             }
+            .frame(maxWidth: proxy.size.width * (1/2))
+
 
             Spacer()
 

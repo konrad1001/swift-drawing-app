@@ -76,7 +76,11 @@ struct StagingView: View {
                         if previousDrawings.count == 0 {
                             VStack(spacing: 8) {
                                 Spacer()
-                                Image(systemName: "clock")
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "clock")
+                                    Spacer()
+                                }
 
                                 Text("No saved drawings of ") + Text(asset.title).underline() + Text(" found.")
 

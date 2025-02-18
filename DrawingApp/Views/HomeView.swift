@@ -29,6 +29,11 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Muse is an iPhone app designed to get everybody into painting.")
                 Text("Choose an existing Muse to copy from, or upload your own.")
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    Text("Muse is made for iPhone, but should still work well on iPad.")
+                        .font(.footnote)
+                        .foregroundStyle(.gray)
+                }
             }
             .padding(.bottom, 132)
 

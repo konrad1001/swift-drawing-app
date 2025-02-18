@@ -26,6 +26,11 @@ struct EditorView: View {
         return nil
     }
 
+    func deviceSpecificTopViewHeight(proxy: GeometryProxy) -> CGFloat {
+        return UIDevice.current.userInterfaceIdiom == .phone ?
+        proxy.size.height * (1/3) : proxy.size.height * (1/4)
+    }
+
     var body: some View {
         GeometryReader { geometryProxy in
             VStack(alignment: .leading, spacing: 16) {
@@ -56,7 +61,7 @@ struct EditorView: View {
                             .fill(.black.opacity(0.4))
                         ZoomableImage(asset: asset)
                     }
-                    .frame(height: geometryProxy.size.height * (1/3))
+                    .frame(height: deviceSpecificTopViewHeight(proxy: geometryProxy))
                     .frame(width: geometryProxy.size.width * (3/5))
                     .clipShape(RoundedRectangle(cornerRadius: 16))
 
@@ -64,7 +69,7 @@ struct EditorView: View {
 
                     PaletteView(asset: asset, colours: colours)
                 }
-                .frame(height: geometryProxy.size.height * (1/3))
+                .frame(height: deviceSpecificTopViewHeight(proxy: geometryProxy))
 
                 // Canvas
                 Group {
@@ -104,7 +109,7 @@ struct EditorView: View {
                 }
 
                 // Toolbar
-                ToolbarView()
+                ToolbarView(proxy: geometryProxy)
             }
             .padding(.horizontal)
             .padding(.top, 52)

@@ -9,6 +9,8 @@ import SwiftUI
 import PencilKit
 
 struct UICanvasView: UIViewRepresentable {
+    @Environment(\.colorScheme) var colorScheme
+
     @Bindable var canvasManager: CanvasManager
     
     var drawing: Drawing
@@ -18,7 +20,9 @@ struct UICanvasView: UIViewRepresentable {
     }
 
     var ink: PKInkingTool {
-        PKInkingTool(canvasManager.pencilType, color: UIColor(canvasManager.color), width: width)
+        let interfaceStyle: UIUserInterfaceStyle = (colorScheme == .light) ? .light : .dark
+        let adjustedColour = PKInkingTool.convertColor(UIColor(canvasManager.color), from: interfaceStyle, to: .light)
+        return PKInkingTool(canvasManager.pencilType, color: adjustedColour, width: width)
        }
 
     var eraser: PKEraserTool {
@@ -29,7 +33,6 @@ struct UICanvasView: UIViewRepresentable {
         Coordinator(self)
     }
 
-    // Maybe do error checking here
     func createPKDrawing(for drawing: Drawing) -> PKDrawing {
         guard let data = drawing.data, let drawing = try? PKDrawing(data: data) else {
             return PKDrawing()
@@ -45,9 +48,10 @@ struct UICanvasView: UIViewRepresentable {
         canvas.drawing = drawing
 
         canvas.backgroundColor = UIColor(canvasManager.bgColour)
-        canvas.drawingPolicy = .anyInput
-        canvas.isOpaque = false
+//        canvas.overrideUserInterfaceStyle = .light
 
+        canvas.drawingPolicy = .anyInput
+        canvas.isOpaque = true
         canvas.tool = canvasManager.isDrawing ? ink : eraser
         canvas.alwaysBounceVertical = true
 
